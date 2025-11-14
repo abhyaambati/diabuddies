@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Diabuddies Demo</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f5f7fa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .phone {
+      width: 360px;
+      height: 640px;
+      border-radius: 32px;
+      background: white;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .title {
+      font-weight: 700;
+      font-size: 18px;
+    }
+    .status {
+      font-size: 13px;
+      color: #666;
+    }
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      margin: 12px 0;
+      padding-right: 4px;
+    }
+    .msg {
+      margin: 6px 0;
+      max-width: 80%;
+      padding: 8px 10px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .msg.agent {
+      background: #e4f0ff;
+      align-self: flex-start;
+    }
+    .msg.user {
+      background: #d1ffd9;
+      align-self: flex-end;
+    }
+    .data-panel {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 10px;
+      margin: 8px 0;
+      font-size: 12px;
+      border: 1px solid #e0e0e0;
+    }
+    .data-panel h4 {
+      margin: 0 0 6px 0;
+      font-size: 13px;
+      color: #333;
+    }
+    .data-panel .data-item {
+      margin: 4px 0;
+      color: #555;
+    }
+    .data-panel .risk-level {
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 6px;
+      display: inline-block;
+      margin-top: 4px;
+    }
+    .risk-level.low { background: #d4edda; color: #155724; }
+    .risk-level.moderate { background: #fff3cd; color: #856404; }
+    .risk-level.high { background: #f8d7da; color: #721c24; }
+    .risk-level.critical { background: #f5c6cb; color: #721c24; font-weight: 700; }
+    .summary-box {
+      background: #e7f3ff;
+      border-left: 3px solid #2f80ed;
+      padding: 8px;
+      margin: 8px 0;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #333;
+    }
+    .insights-panel {
+      position: fixed;
+      bottom: 70px;
+      right: 10px;
+      width: 280px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      border: 1px solid #e0e0e0;
+      z-index: 1000;
+      transition: all 0.3s ease;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .insights-panel.minimized {
+      height: 45px;
+      max-height: 45px;
+    }
+    .insights-panel.expanded {
+      height: auto;
+      max-height: 400px;
+    }
+    .insights-header {
+      background: #2f80ed;
+      color: white;
+      padding: 10px 12px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      font-size: 13px;
+      user-select: none;
+      flex-shrink: 0;
+    }
+    .insights-header:hover {
+      background: #2563eb;
+    }
+    .insights-header:active {
+      background: #1e5bb8;
+    }
+    .insights-badge {
+      background: rgba(255,255,255,0.3);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      margin-left: 6px;
+    }
+    .insights-content {
+      padding: 12px;
+      overflow-y: auto;
+      max-height: 350px;
+      display: none;
+      font-size: 11px;
+      flex: 1;
+    }
+    .insights-panel.expanded .insights-content {
+      display: block;
+    }
+    .insights-toggle {
+      font-size: 16px;
+      transition: transform 0.3s ease;
+      margin-left: 8px;
+      display: inline-block;
+    }
+    .insights-panel.expanded .insights-toggle {
+      transform: rotate(180deg);
+    }
+    .insights-panel.minimized .insights-content {
+      display: none !important;
+    }
+    .input-area {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .generate-insights-btn {
+      background: #6c757d;
+      color: white;
+      width: 100%;
+      margin-top: 4px;
+      font-size: 12px;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 8px 10px;
+      border-radius: 18px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+    button {
+      border: none;
+      border-radius: 18px;
+      padding: 8px 14px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    #callButton {
+      background: #2f80ed;
+      color: white;
+      width: 100%;
+      margin-top: 4px;
+    }
+    #sendButton {
+      background: #27ae60;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="phone">
+    <div class="header">
+      <div class="title">Diabuddies</div>
+      <div class="status" id="status">Idle</div>
+      <button id="callButton">Start Check-In</button>
+      <button id="generateInsightsBtn" class="generate-insights-btn" style="display: none;">Generate Insights</button>
+    </div>
+
+    <div class="messages" id="messages"></div>
+
+    <div class="input-area">
+      <input id="input" type="text" placeholder="Say something..." />
+      <button id="sendButton">Send</button>
+    </div>
+    
+    <!-- Insights Panel (minimized by default, click to expand) -->
+    <div class="insights-panel minimized" id="insightsPanel">
+      <div class="insights-header" id="insightsToggle" title="Click to expand/collapse insights">
+        <span>📊 Insights <span class="insights-badge" id="insightsBadge" style="display: none;">0</span></span>
+        <span class="insights-toggle">▼</span>
+      </div>
+      <div class="insights-content" id="insightsContent">
+        <div id="insightsData" style="color: #666; font-size: 11px;">
+          <p style="margin: 0; text-align: center; color: #999;">No insights yet. Insights will appear here after conversation.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const statusEl = document.getElementById('status');
+    const messagesEl = document.getElementById('messages');
+    const inputEl = document.getElementById('input');
+    const sendBtn = document.getElementById('sendButton');
+    const callBtn = document.getElementById('callButton');
+    const generateInsightsBtn = document.getElementById('generateInsightsBtn');
+
+    let sessionId = null;
+    let insightsData = null;
+    let insightsCount = 0;
+
+    const insightsPanel = document.getElementById('insightsPanel');
+    const insightsToggle = document.getElementById('insightsToggle');
+    const insightsContent = document.getElementById('insightsContent');
+    const insightsDataEl = document.getElementById('insightsData');
+    const insightsBadge = document.getElementById('insightsBadge');
+
+    // Toggle insights panel (expandable/collapsible)
+    insightsToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isExpanded = insightsPanel.classList.contains('expanded');
+      
+      if (isExpanded) {
+        // Collapse
+        insightsPanel.classList.remove('expanded');
+        insightsPanel.classList.add('minimized');
+      } else {
+        // Expand
+        insightsPanel.classList.remove('minimized');
+        insightsPanel.classList.add('expanded');
+      }
+    });
+
+    function addMessage(text, who) {
+      const div = document.createElement('div');
+      div.className = 'msg ' + who;
+      div.textContent = text;
+      messagesEl.appendChild(div);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function startCall() {
+      statusEl.textContent = 'In check-in…';
+      messagesEl.innerHTML = '';
+      sessionId = Date.now().toString();
+      insightsData = null;
+      insightsCount = 0;
+      updateInsightsBadge();
+      generateInsightsBtn.style.display = 'block';
+      // Reset insights panel
+      insightsPanel.classList.remove('expanded');
+      insightsPanel.classList.add('minimized');
+      checkInsightsEmpty();
+      addMessage("Hi, I'm Diabuddies, your diabetes buddy. How are you doing today?", "agent");
+    }
+    
+    generateInsightsBtn.addEventListener('click', generateInsights);
+
+    function updateInsightsBadge() {
+      insightsBadge.textContent = insightsCount;
+      if (insightsCount > 0) {
+        insightsBadge.style.display = 'inline-block';
+      } else {
+        insightsBadge.style.display = 'none';
+      }
+    }
+    
+    // Show empty state message when no insights
+    function checkInsightsEmpty() {
+      const hasData = insightsDataEl.innerHTML.trim() !== '' && 
+                      !insightsDataEl.innerHTML.includes('No insights yet');
+      if (!hasData && insightsCount === 0) {
+        insightsDataEl.innerHTML = '<p style="margin: 0; text-align: center; color: #999;">No insights yet. Insights will appear here after conversation.</p>';
+      }
+    }
+
+    function updateInsightsDisplay(data, isEmergency = false) {
+      if (!data) return;
+      
+      insightsData = data;
+      insightsCount++;
+      updateInsightsBadge();
+      
+      let html = '';
+      
+      // Extracted Data
+      if (data.extracted) {
+        const extracted = data.extracted;
+        html += '<div class="data-panel" style="margin-bottom: 10px;">';
+        html += '<h4>📊 Extracted Data</h4>';
+        if (extracted.glucose !== null && extracted.glucose !== undefined) {
+          html += `<div class="data-item">Glucose: ${extracted.glucose} mg/dL</div>`;
+        }
+        if (extracted.medications_taken !== null && extracted.medications_taken !== undefined) {
+          html += `<div class="data-item">Medications: ${extracted.medications_taken ? 'Taken ✓' : 'Not taken'}</div>`;
+        }
+        if (extracted.mood) {
+          html += `<div class="data-item">Mood: ${extracted.mood}</div>`;
+        }
+        if (extracted.symptoms && extracted.symptoms.length > 0) {
+          html += `<div class="data-item">Symptoms: ${extracted.symptoms.join(', ')}</div>`;
+        }
+        if (extracted.concerns) {
+          html += `<div class="data-item">Concerns: ${extracted.concerns}</div>`;
+        }
+        html += '</div>';
+      }
+      
+      // Risk Assessment
+      if (data.risk) {
+        const risk = data.risk;
+        html += '<div class="data-panel" style="margin-bottom: 10px;">';
+        html += '<h4>⚠️ Risk Assessment</h4>';
+        if (risk.level) {
+          html += `<div class="risk-level ${risk.level}">Risk Level: ${risk.level.toUpperCase()}</div>`;
+        }
+        if (risk.overall_risk) {
+          html += `<div class="data-item" style="margin-top: 6px;">${risk.overall_risk}</div>`;
+        }
+        if (risk.recommendations && risk.recommendations.length > 0) {
+          html += `<div class="data-item" style="margin-top: 6px;"><strong>Recommendations:</strong><ul style="margin: 4px 0; padding-left: 20px;">`;
+          risk.recommendations.forEach(rec => {
+            html += `<li>${rec}</li>`;
+          });
+          html += `</ul></div>`;
+        }
+        html += '</div>';
+      }
+      
+      // Summary
+      if (data.summary) {
+        html += '<div class="summary-box">';
+        html += `<strong>📝 Daily Summary:</strong><br>${data.summary}`;
+        html += '</div>';
+      }
+      
+      insightsDataEl.innerHTML = html;
+      
+      // Auto-expand if emergency or if user wants to see insights
+      if (isEmergency) {
+        insightsPanel.classList.add('expanded');
+        insightsPanel.classList.remove('minimized');
+      }
+      
+      // If panel is already expanded, keep it expanded
+      // Otherwise, user can click to expand
+    }
+
+    async function generateInsights() {
+      if (!sessionId) return;
+      
+      statusEl.textContent = 'Generating insights…';
+      
+      try {
+        const res = await fetch('/api/insights', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId })
+        });
+        const data = await res.json();
+        updateInsightsDisplay(data, false);
+        statusEl.textContent = 'In check-in…';
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = 'Error generating insights';
+      }
+    }
+
+    async function sendMessage() {
+      const text = inputEl.value.trim();
+      if (!text) return;
+      inputEl.value = '';
+      addMessage(text, 'user');
+
+      const payload = { sessionId, message: text, generateInsights: false };
+      statusEl.textContent = 'Thinking…';
+
+      try {
+        const res = await fetch('/api/diabuddies', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        addMessage(data.reply, 'agent');
+        
+        // Only show insights in minimized panel if emergency or if insights were generated
+        if (data.is_emergency || data.extracted || data.risk || data.summary) {
+          updateInsightsDisplay({
+            extracted: data.extracted,
+            risk: data.risk,
+            summary: data.summary
+          }, data.is_emergency);
+        }
+        
+        statusEl.textContent = 'In check-in…';
+      } catch (err) {
+        console.error(err);
+        addMessage("Oops, something went wrong.", "agent");
+        statusEl.textContent = 'Error';
+      }
+    }
+
+    callBtn.addEventListener('click', startCall);
+    sendBtn.addEventListener('click', sendMessage);
+    inputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+  </script>
+</body>
+</html>
