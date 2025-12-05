@@ -2,446 +2,4037 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Diabuddies Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diabuddies</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #f5f7fa;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    
+    * {
       margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    .phone {
-      width: 360px;
-      height: 640px;
-      border-radius: 32px;
-      background: white;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.15);
-      padding: 16px;
+    
+    :root {
+      --pastel-blue: #B8E6FF;
+      --pastel-purple: #D4C5F9;
+      --pastel-green: #C8F5C8;
+      --pastel-pink: #FFD6E8;
+      --pastel-orange: #FFE5B4;
+      --pastel-yellow: #FFF9C4;
+      --soft-blue: #E3F2FD;
+      --soft-purple: #F3E5F5;
+      --soft-green: #E8F5E9;
+      --text-primary: #2C3E50;
+      --text-secondary: #7F8C8D;
+      --text-light: #BDC3C7;
+      --white: #FFFFFF;
+      --bg-light: #F8F9FA;
+      --shadow-soft: 0 2px 12px rgba(0,0,0,0.04);
+      --shadow-gentle: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    
+    body {
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #E3F2FD 0%, #F3E5F5 50%, #E8F5E9 100%);
+      background-attachment: fixed;
+      height: 100vh;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      transition: background 0.3s ease;
+    }
+    
+    body.dark-mode {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      color: #e0e0e0;
+    }
+    
+    body.dark-mode .app-container {
+      background: #1e1e2e;
+      color: #e0e0e0;
+    }
+    
+    body.dark-mode .header {
+      background: #1e1e2e;
+      border-bottom-color: rgba(255,255,255,0.1);
+    }
+    
+    body.dark-mode .card,
+    body.dark-mode .log-card {
+      background: #2a2a3e;
+      color: #e0e0e0;
+    }
+    
+    body.dark-mode .settings-dropdown {
+      background: #2a2a3e;
+      color: #e0e0e0;
+    }
+    
+    body.dark-mode .settings-item:hover {
+      background: #353548;
+    }
+    
+    .app-container {
       display: flex;
       flex-direction: column;
+      height: 100vh;
+      max-width: 480px;
+      margin: 0 auto;
+      background: var(--white);
+      box-shadow: var(--shadow-gentle);
+      position: relative;
+      overflow: visible;
+      z-index: 1;
     }
+    
+    /* Decorative Background Shapes */
+    .app-container::before {
+      content: '';
+      position: absolute;
+      top: -100px;
+      right: -100px;
+      width: 300px;
+      height: 300px;
+      background: var(--pastel-blue);
+      border-radius: 50%;
+      opacity: 0.3;
+      z-index: 0;
+    }
+    
+    .app-container::after {
+      content: '';
+      position: absolute;
+      bottom: -150px;
+      left: -150px;
+      width: 400px;
+      height: 400px;
+      background: var(--pastel-purple);
+      border-radius: 50%;
+      opacity: 0.2;
+      z-index: 0;
+    }
+    
     .header {
-      text-align: center;
-      margin-bottom: 8px;
+      background: var(--white);
+      color: var(--text-primary);
+      padding: 20px 20px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(0,0,0,0.04);
+      position: relative;
+      z-index: 100;
+      overflow: visible;
     }
-    .title {
-      font-weight: 700;
+    
+    .header-left {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+    }
+    
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .profile-button {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--pastel-purple);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    
+    .profile-button:hover {
+      transform: scale(1.05);
+      border-color: var(--pastel-blue);
+    }
+    
+    .profile-button.active {
+      background: var(--pastel-blue);
+    }
+    
+    .settings-dropdown {
+      position: fixed;
+      top: 75px;
+      right: calc(50vw - 240px);
+      background: var(--white);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+      min-width: 280px;
+      max-width: 320px;
+      max-height: calc(100vh - 90px);
+      z-index: 10000;
+      display: none;
+      overflow: hidden;
+      animation: slideDown 0.2s ease-out;
+    }
+    
+    @media (max-width: 480px) {
+      .settings-dropdown {
+        right: 10px;
+        left: 10px;
+        max-width: calc(100% - 20px);
+      }
+    }
+    
+    @media (min-width: 481px) {
+      .settings-dropdown {
+        right: max(10px, calc(50vw - 240px));
+      }
+    }
+    
+    .settings-dropdown.show {
+      display: block;
+    }
+    
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .settings-header {
+      padding: 20px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+      background: linear-gradient(135deg, var(--pastel-blue), var(--pastel-purple));
+    }
+    
+    .settings-header h3 {
+      margin: 0 0 4px 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .settings-header p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+    
+    .settings-list {
+      max-height: calc(100vh - 200px);
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    
+    .settings-list::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .settings-list::-webkit-scrollbar-track {
+      background: var(--bg-light);
+    }
+    
+    .settings-list::-webkit-scrollbar-thumb {
+      background: var(--text-light);
+      border-radius: 3px;
+    }
+    
+    .settings-list::-webkit-scrollbar-thumb:hover {
+      background: var(--text-secondary);
+    }
+    
+    .settings-item {
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(0,0,0,0.04);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: background 0.2s ease;
+    }
+    
+    .settings-item:hover {
+      background: var(--bg-light);
+    }
+    
+    .settings-item:last-child {
+      border-bottom: none;
+    }
+    
+    .settings-item-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+    
+    .settings-item-content {
+      flex: 1;
+    }
+    
+    .settings-item-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+    
+    .settings-item-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    
+    .settings-item-toggle {
+      width: 48px;
+      height: 28px;
+      border-radius: 14px;
+      background: #E0E0E0;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    
+    .settings-item-toggle.active {
+      background: var(--pastel-green);
+    }
+    
+    .settings-item-toggle::after {
+      content: '';
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: white;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.2s ease;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .settings-item-toggle.active::after {
+      transform: translateX(20px);
+    }
+    
+    .settings-section-title {
+      padding: 12px 20px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--pastel-blue), var(--pastel-purple), var(--pastel-pink));
+    }
+    
+    .header h1 {
+      font-size: 26px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+      color: var(--text-primary);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    
+    .header-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--pastel-blue);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 18px;
     }
-    .status {
-      font-size: 13px;
-      color: #666;
-    }
-    .messages {
+    
+    .tab-content {
       flex: 1;
       overflow-y: auto;
-      margin: 12px 0;
-      padding-right: 4px;
+      padding: 24px 20px;
+      display: none;
+      position: relative;
+      z-index: 1;
+      background: var(--bg-light);
     }
-    .msg {
-      margin: 6px 0;
-      max-width: 80%;
-      padding: 8px 10px;
-      border-radius: 16px;
-      font-size: 14px;
-      line-height: 1.4;
+    
+    .tab-content.active {
+      display: block;
     }
-    .msg.agent {
-      background: #e4f0ff;
-      align-self: flex-start;
+    
+    /* Custom Scrollbar */
+    .tab-content::-webkit-scrollbar {
+      width: 4px;
     }
-    .msg.user {
-      background: #d1ffd9;
-      align-self: flex-end;
+    
+    .tab-content::-webkit-scrollbar-track {
+      background: transparent;
     }
-    .data-panel {
-      background: #f8f9fa;
-      border-radius: 12px;
-      padding: 10px;
-      margin: 8px 0;
-      font-size: 12px;
-      border: 1px solid #e0e0e0;
+    
+    .tab-content::-webkit-scrollbar-thumb {
+      background: var(--pastel-blue);
+      border-radius: 10px;
     }
-    .data-panel h4 {
-      margin: 0 0 6px 0;
-      font-size: 13px;
-      color: #333;
+    
+    .tab-content::-webkit-scrollbar-thumb:hover {
+      background: var(--pastel-purple);
     }
-    .data-panel .data-item {
-      margin: 4px 0;
-      color: #555;
+    
+    .bottom-nav {
+      display: flex;
+      background: var(--white);
+      border-top: 1px solid rgba(0,0,0,0.05);
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
+      position: relative;
+      z-index: 10;
     }
-    .data-panel .risk-level {
+    
+    .nav-item {
+      flex: 1;
+      padding: 14px 8px 12px;
+      text-align: center;
+      cursor: pointer;
+      color: var(--text-light);
+      font-size: 11px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      border: none;
+      background: none;
+      position: relative;
+    }
+    
+    .nav-item.active {
+      color: var(--text-primary);
+    }
+    
+    .nav-item-icon {
+      font-size: 22px;
+      margin-bottom: 4px;
+      display: block;
+      transition: all 0.2s ease;
+    }
+    
+    .nav-item.active .nav-item-icon {
+      transform: scale(1.15) translateY(-2px);
+    }
+    
+    .nav-item.active {
+      background: var(--soft-blue);
+    }
+    
+    /* Health Dashboard Styles */
+    .health-dashboard {
+      margin-bottom: 32px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .dashboard-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    
+    .dashboard-greeting {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .profile-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--pastel-blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      border: 2px solid var(--white);
+      box-shadow: var(--shadow-soft);
+    }
+    
+    .greeting-text h3 {
+      font-size: 18px;
       font-weight: 600;
-      padding: 4px 8px;
-      border-radius: 6px;
-      display: inline-block;
+      color: var(--text-primary);
+      margin: 0;
+    }
+    
+    .greeting-text p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin: 2px 0 0 0;
+    }
+    
+    .dashboard-title {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 20px;
+    }
+    
+    .health-metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .health-metric-card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: var(--shadow-soft);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+    
+    .health-metric-card:hover {
+      box-shadow: var(--shadow-gentle);
+      transform: translateY(-2px);
+    }
+    
+    .metric-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      margin-bottom: 12px;
+    }
+    
+    .metric-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    
+    .metric-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+    
+    .metric-chart {
+      height: 40px;
+      margin-top: 8px;
+    }
+    
+    .bar-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      height: 100%;
+    }
+    
+    .bar {
+      flex: 1;
+      background: rgba(0,0,0,0.1);
+      border-radius: 2px 2px 0 0;
+      min-height: 4px;
+    }
+    
+    .line-chart {
+      height: 100%;
+      position: relative;
+    }
+    
+    .line-chart svg {
+      width: 100%;
+      height: 100%;
+    }
+    
+    .sleep-chart {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      height: 24px;
+    }
+    
+    .sleep-bar {
+      flex: 1;
+      background: rgba(0,0,0,0.08);
+      border-radius: 4px;
+      height: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .sleep-bar.filled {
+      background: var(--pastel-green);
+    }
+    
+    .sleep-label {
+      font-size: 9px;
+      color: var(--text-secondary);
+      text-align: center;
       margin-top: 4px;
     }
-    .risk-level.low { background: #d4edda; color: #155724; }
-    .risk-level.moderate { background: #fff3cd; color: #856404; }
-    .risk-level.high { background: #f8d7da; color: #721c24; }
-    .risk-level.critical { background: #f5c6cb; color: #721c24; font-weight: 700; }
-    .summary-box {
-      background: #e7f3ff;
-      border-left: 3px solid #2f80ed;
-      padding: 8px;
-      margin: 8px 0;
-      border-radius: 6px;
-      font-size: 12px;
-      color: #333;
+    
+    .recommendations-section {
+      margin-top: 24px;
     }
-    .insights-panel {
-      position: fixed;
-      bottom: 70px;
-      right: 10px;
-      width: 280px;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      border: 1px solid #e0e0e0;
-      z-index: 1000;
-      transition: all 0.3s ease;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-    .insights-panel.minimized {
-      height: 45px;
-      max-height: 45px;
-    }
-    .insights-panel.expanded {
-      height: auto;
-      max-height: 400px;
-    }
-    .insights-header {
-      background: #2f80ed;
-      color: white;
-      padding: 10px 12px;
-      cursor: pointer;
+    
+    .recommendations-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .recommendations-header h3 {
+      font-size: 18px;
       font-weight: 600;
-      font-size: 13px;
-      user-select: none;
-      flex-shrink: 0;
+      color: var(--text-primary);
+      margin: 0;
     }
-    .insights-header:hover {
-      background: #2563eb;
-    }
-    .insights-header:active {
-      background: #1e5bb8;
-    }
-    .insights-badge {
-      background: rgba(255,255,255,0.3);
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 11px;
-      margin-left: 6px;
-    }
-    .insights-content {
-      padding: 12px;
-      overflow-y: auto;
-      max-height: 350px;
-      display: none;
-      font-size: 11px;
-      flex: 1;
-    }
-    .insights-panel.expanded .insights-content {
-      display: block;
-    }
-    .insights-toggle {
-      font-size: 16px;
-      transition: transform 0.3s ease;
-      margin-left: 8px;
-      display: inline-block;
-    }
-    .insights-panel.expanded .insights-toggle {
-      transform: rotate(180deg);
-    }
-    .insights-panel.minimized .insights-content {
-      display: none !important;
-    }
-    .input-area {
-      display: flex;
-      gap: 8px;
-      margin-top: 8px;
-    }
-    .generate-insights-btn {
-      background: #6c757d;
-      color: white;
-      width: 100%;
-      margin-top: 4px;
-      font-size: 12px;
-    }
-    input[type="text"] {
-      flex: 1;
-      padding: 8px 10px;
-      border-radius: 18px;
-      border: 1px solid #ccc;
+    
+    .see-all-link {
       font-size: 14px;
-    }
-    button {
-      border: none;
-      border-radius: 18px;
-      padding: 8px 14px;
-      font-size: 14px;
+      color: var(--pastel-purple);
+      font-weight: 500;
       cursor: pointer;
     }
-    #callButton {
-      background: #2f80ed;
-      color: white;
-      width: 100%;
-      margin-top: 4px;
+    
+    .recommendation-card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 12px;
+      transition: all 0.2s ease;
+      cursor: pointer;
     }
-    #sendButton {
-      background: #27ae60;
+    
+    .recommendation-card:hover {
+      box-shadow: var(--shadow-gentle);
+      transform: translateX(4px);
+    }
+    
+    .recommendation-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    
+    .recommendation-content {
+      flex: 1;
+    }
+    
+    .recommendation-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    
+    .recommendation-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+    
+    .recommendation-arrow {
+      font-size: 18px;
+      color: var(--text-light);
+    }
+    
+    /* Tracker Styles */
+    .tracker-section {
+      margin-bottom: 32px;
+      animation: fadeInUp 0.4s ease-out;
+      position: relative;
+      z-index: 1;
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(15px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .tracker-section h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .section-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    
+    .icon-glucose { background: var(--pastel-blue); }
+    .icon-medication { background: var(--pastel-purple); }
+    .icon-meal { background: var(--pastel-pink); }
+    .icon-activity { background: var(--pastel-green); }
+    .icon-logs { background: var(--pastel-orange); }
+    
+    .log-card {
+      background: var(--white);
+      border: none;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-soft);
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .log-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--pastel-blue);
+      transition: width 0.3s ease;
+    }
+    
+    .log-card:hover {
+      box-shadow: var(--shadow-gentle);
+      transform: translateY(-2px);
+    }
+    
+    .log-card:hover::before {
+      width: 6px;
+    }
+    
+    .card-icon-wrapper {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 16px;
+      position: relative;
+    }
+    
+    .card-icon-wrapper::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 16px;
+      background: inherit;
+      opacity: 0.2;
+      z-index: -1;
+    }
+    
+    .log-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .form-group label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 2px;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 14px 16px;
+      border: 1.5px solid #E8ECEF;
+      border-radius: 12px;
+      font-size: 15px;
+      font-family: inherit;
+      transition: all 0.2s ease;
+      background: var(--white);
+      color: var(--text-primary);
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--pastel-blue);
+      background: var(--white);
+      box-shadow: 0 0 0 3px rgba(184, 230, 255, 0.3);
+    }
+    
+    .form-group textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    
+    .btn {
+      padding: 14px 24px;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    
+    .btn-primary {
+      background: var(--pastel-blue);
+      color: var(--text-primary);
+      box-shadow: var(--shadow-soft);
+    }
+    
+    .btn-primary:hover {
+      background: var(--pastel-purple);
+      box-shadow: var(--shadow-gentle);
+      transform: translateY(-1px);
+    }
+    
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+    
+    .btn-secondary {
+      background: var(--pastel-green);
+      color: var(--text-primary);
+    }
+    
+    .recent-logs {
+      margin-top: 24px;
+    }
+    
+    .log-item {
+      background: var(--white);
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      font-size: 14px;
+      box-shadow: var(--shadow-soft);
+      transition: all 0.2s ease;
+      border-left: 4px solid var(--pastel-blue);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+    }
+    
+    .log-item::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--pastel-blue);
+      flex-shrink: 0;
+    }
+    
+    .log-item:hover {
+      box-shadow: var(--shadow-gentle);
+      transform: translateX(4px);
+    }
+    
+    .log-item strong {
+      color: var(--pastel-purple);
+      font-weight: 600;
+    }
+    
+    .log-item-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    
+    /* Chat Styles */
+    .specialist-selector {
+      padding: 20px;
+      background: var(--white);
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .specialist-selector h3 {
+      margin: 0 0 16px 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      text-align: center;
+    }
+    
+    .specialist-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    
+    .specialist-card {
+      padding: 16px;
+      background: var(--bg-light);
+      border: 2px solid transparent;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+    
+    .specialist-card:hover {
+      background: var(--pastel-blue);
+      border-color: var(--pastel-blue);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-soft);
+    }
+    
+    .specialist-card.selected {
+      background: var(--pastel-blue);
+      border-color: var(--pastel-purple);
+      box-shadow: var(--shadow-gentle);
+    }
+    
+    .specialist-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+    
+    .specialist-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    
+    .specialist-desc {
+      font-size: 11px;
+      color: var(--text-secondary);
+      line-height: 1.3;
+    }
+    
+    .chat-header {
+      padding: 20px;
+      background: linear-gradient(135deg, var(--pastel-blue), var(--pastel-purple));
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .chat-header-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .chat-header-info h3 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .chat-header-info p {
+      margin: 2px 0 0 0;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    
+    .chat-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: var(--pastel-green);
+      margin-left: auto;
+    }
+    
+    .chat-status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--pastel-green);
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .quick-prompts {
+      padding: 16px 20px;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      background: var(--bg-light);
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .quick-prompts::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .quick-prompt {
+      padding: 8px 16px;
+      background: var(--white);
+      border: 1.5px solid #E8ECEF;
+      border-radius: 20px;
+      font-size: 13px;
+      color: var(--text-primary);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow-soft);
+    }
+    
+    .quick-prompt:hover {
+      background: var(--pastel-blue);
+      border-color: var(--pastel-blue);
+      transform: translateY(-1px);
+    }
+    
+    .quick-actions {
+      padding: 12px 20px;
+      background: var(--white);
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    
+    .quick-action-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 12px 8px;
+      background: var(--bg-light);
+      border: 1.5px solid transparent;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+    
+    .quick-action-btn:hover {
+      background: var(--pastel-blue);
+      border-color: var(--pastel-blue);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-soft);
+    }
+    
+    .quick-action-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+    
+    .quick-action-label {
+      font-size: 11px;
+      color: var(--text-primary);
+      font-weight: 500;
+      line-height: 1.2;
+    }
+    
+    .quick-action-btn.log-glucose .quick-action-icon {
+      background: var(--pastel-pink);
+    }
+    
+    .quick-action-btn.log-medication .quick-action-icon {
+      background: var(--pastel-purple);
+    }
+    
+    .quick-action-btn.log-meal .quick-action-icon {
+      background: var(--pastel-orange);
+    }
+    
+    .quick-action-btn.log-activity .quick-action-icon {
+      background: var(--pastel-green);
+    }
+    
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      margin-bottom: 16px;
+      background: transparent;
+    }
+    
+    .message {
+      margin-bottom: 20px;
+      max-width: 85%;
+      animation: slideIn 0.3s ease-out;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .message.user {
+      margin-left: auto;
+      flex-direction: row-reverse;
+    }
+    
+    .message-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+      box-shadow: var(--shadow-soft);
+    }
+    
+    .message.user .message-avatar {
+      background: var(--pastel-blue);
+      color: var(--text-primary);
+    }
+    
+    .message.agent .message-avatar {
+      background: linear-gradient(135deg, var(--pastel-purple), var(--pastel-blue));
       color: white;
+    }
+    
+    .message-bubble {
+      padding: 14px 18px;
+      border-radius: 20px;
+      font-size: 15px;
+      line-height: 1.6;
+      box-shadow: var(--shadow-soft);
+      position: relative;
+    }
+    
+    .message.user .message-bubble {
+      background: var(--pastel-blue);
+      color: var(--text-primary);
+      border-bottom-right-radius: 6px;
+    }
+    
+    .message.agent .message-bubble {
+      background: var(--white);
+      color: var(--text-primary);
+      border-bottom-left-radius: 6px;
+      box-shadow: var(--shadow-soft);
+    }
+    
+    .typing-indicator {
+      display: none;
+      padding: 14px 18px;
+      background: var(--white);
+      border-radius: 20px;
+      border-bottom-left-radius: 6px;
+      box-shadow: var(--shadow-soft);
+      max-width: 60px;
+    }
+    
+    .typing-indicator.show {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+    
+    .typing-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text-secondary);
+      animation: typing 1.4s infinite;
+    }
+    
+    .typing-dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    
+    .typing-dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+    
+    @keyframes typing {
+      0%, 60%, 100% {
+        transform: translateY(0);
+        opacity: 0.7;
+      }
+      30% {
+        transform: translateY(-10px);
+        opacity: 1;
+      }
+    }
+    
+    .chat-input-area {
+      display: flex;
+      gap: 10px;
+      padding: 16px;
+      background: var(--white);
+      border-top: 1px solid rgba(0,0,0,0.05);
+      align-items: center;
+    }
+    
+    .chat-input-wrapper {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    
+    .chat-input {
+      flex: 1;
+      padding: 12px 16px 12px 48px;
+      border: 1.5px solid #E8ECEF;
+      border-radius: 24px;
+      font-size: 15px;
+      background: var(--bg-light);
+      transition: all 0.2s ease;
+    }
+    
+    .chat-input:focus {
+      outline: none;
+      border-color: var(--pastel-blue);
+      background: var(--white);
+      box-shadow: 0 0 0 3px rgba(184, 230, 255, 0.3);
+    }
+    
+    .voice-input-btn {
+      position: absolute;
+      left: 12px;
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: 4px;
+      font-size: 16px;
+      transition: color 0.2s ease;
+    }
+    
+    .voice-input-btn:hover {
+      color: var(--pastel-blue);
+    }
+    
+    .voice-input-btn.recording {
+      color: #ef4444;
+      animation: pulse 1s infinite;
+    }
+    
+    .chat-send-btn {
+      background: var(--pastel-blue);
+      color: var(--text-primary);
+      border: none;
+      border-radius: 24px;
+      padding: 12px 20px;
+      cursor: pointer;
+      font-weight: 500;
+      box-shadow: var(--shadow-soft);
+      transition: all 0.2s ease;
+      min-width: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .chat-send-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-gentle);
+    }
+    
+    .chat-send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    /* Community Styles */
+    .create-post-btn {
+      background: var(--pastel-pink);
+      color: var(--text-primary);
+      width: 100%;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-soft);
+    }
+    
+    .post-card {
+      background: var(--white);
+      border: none;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-soft);
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .post-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--pastel-pink), var(--pastel-purple));
+    }
+    
+    .post-card:hover {
+      box-shadow: var(--shadow-gentle);
+      transform: translateY(-2px);
+    }
+    
+    .post-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--pastel-blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      margin-right: 12px;
+      flex-shrink: 0;
+    }
+    
+    .post-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .post-header-content {
+      display: flex;
+      align-items: center;
+      flex: 1;
+    }
+    
+    .post-author {
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: 15px;
+    }
+    
+    .post-time {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+    
+    .post-content {
+      margin: 16px 0;
+      color: #374151;
+      line-height: 1.6;
+      font-size: 15px;
+    }
+    
+    .post-image-container {
+      position: relative;
+      margin: 16px 0;
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--bg-light);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .post-image-container:hover {
+      transform: scale(1.01);
+      box-shadow: var(--shadow-gentle);
+    }
+    
+    .post-image {
+      width: 100%;
+      border-radius: 12px;
+      object-fit: cover;
+      max-height: 400px;
+      display: block;
+    }
+    
+    .image-caption {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+      padding: 16px 12px 12px;
+      color: white;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    
+    .post-actions {
+      display: flex;
+      gap: 24px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(229, 231, 235, 0.5);
+    }
+    
+    .post-action {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #6b7280;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      padding: 6px 12px;
+      border-radius: 12px;
+    }
+    
+    .post-action:hover {
+      color: var(--text-primary);
+      background: var(--soft-blue);
+    }
+    
+    .comment-section {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .comment {
+      background: var(--bg-light);
+      padding: 12px 16px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    
+    .comment-author {
+      font-weight: 600;
+      color: var(--pastel-purple);
+      margin-right: 8px;
+    }
+    
+    .comment-input {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    
+    .comment-input input {
+      flex: 1;
+      padding: 10px 16px;
+      border: 1.5px solid #E8ECEF;
+      border-radius: 20px;
+      font-size: 14px;
+      background: var(--white);
+      transition: all 0.2s ease;
+    }
+    
+    .comment-input input:focus {
+      outline: none;
+      border-color: var(--pastel-blue);
+      box-shadow: 0 0 0 3px rgba(184, 230, 255, 0.3);
+    }
+    
+    /* Doctor Communication Styles */
+    .message-thread {
+      background: var(--white);
+      padding: 16px;
+      border-radius: 16px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-soft);
+      transition: all 0.2s ease;
+      border-left: 4px solid var(--pastel-blue);
+      position: relative;
+      padding-left: 20px;
+    }
+    
+    .message-thread::before {
+      content: '';
+      position: absolute;
+      left: 8px;
+      top: 16px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--pastel-blue);
+    }
+    
+    .message-thread:hover {
+      box-shadow: var(--shadow-gentle);
+      transform: translateX(4px);
+    }
+    
+    .message-thread.from-doctor {
+      background: var(--soft-blue);
+      border-left-color: var(--pastel-purple);
+    }
+    
+    .message-thread.from-doctor::before {
+      background: var(--pastel-purple);
+    }
+    
+    .doctor-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--pastel-purple);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      margin-right: 12px;
+      flex-shrink: 0;
+    }
+    
+    .message-thread-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+    
+    .message-thread-content {
+      color: var(--text-primary);
+      line-height: 1.6;
+      font-size: 15px;
+    }
+    
+    .send-message-form {
+      background: var(--white);
+      padding: 20px;
+      border-radius: 16px;
+      margin-top: 20px;
+      box-shadow: var(--shadow-soft);
+    }
+    
+    .send-message-form h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: var(--text-primary);
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-secondary);
+    }
+    
+    .empty-state-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+      opacity: 0.4;
+    }
+    
+    .empty-state p {
+      font-size: 15px;
+      font-weight: 500;
     }
   </style>
 </head>
 <body>
-  <div class="phone">
+  <div class="app-container">
     <div class="header">
-      <div class="title">Diabuddies</div>
-      <div class="status" id="status">Idle</div>
-      <button id="callButton">Start Check-In</button>
-      <button id="generateInsightsBtn" class="generate-insights-btn" style="display: none;">Generate Insights</button>
+      <div class="header-left">
+        <img src="/logo.png" alt="Diabuddies" style="height: 48px; width: auto; object-fit: contain;" onerror="this.style.display='none';">
+      </div>
+      <div class="header-right">
+        <div class="profile-button" id="profile-button" onclick="toggleSettingsDropdown()" title="Profile & Settings">
+          <i class="fas fa-user-circle" style="color: var(--text-primary); font-size: 24px;"></i>
+        </div>
     </div>
 
-    <div class="messages" id="messages"></div>
-
-    <div class="input-area">
-      <input id="input" type="text" placeholder="Say something..." />
-      <button id="sendButton">Send</button>
+      <!-- Settings Dropdown -->
+      <div class="settings-dropdown" id="settings-dropdown">
+        <div class="settings-header">
+          <h3>Settings</h3>
+          <p id="settings-patient-name">John</p>
+        </div>
+        <div class="settings-list">
+          <div class="settings-section-title">Reminders</div>
+          <div class="settings-item" onclick="toggleSetting('smsReminders')">
+            <div class="settings-item-icon" style="background: var(--pastel-blue);">
+              <i class="fas fa-sms" style="color: var(--text-primary);"></i>
+            </div>
+            <div class="settings-item-content">
+              <div class="settings-item-title">SMS Reminders</div>
+              <div class="settings-item-desc">Get medication & glucose reminders via text</div>
+            </div>
+            <div class="settings-item-toggle" id="toggle-smsReminders"></div>
+          </div>
+          
+          <div class="settings-item" onclick="toggleSetting('medicationReminders')">
+            <div class="settings-item-icon" style="background: var(--pastel-purple);">
+              <i class="fas fa-pills" style="color: var(--text-primary);"></i>
+            </div>
+            <div class="settings-item-content">
+              <div class="settings-item-title">Medication Reminders</div>
+              <div class="settings-item-desc">Remind me to take medications</div>
+            </div>
+            <div class="settings-item-toggle" id="toggle-medicationReminders"></div>
     </div>
     
-    <!-- Insights Panel (minimized by default, click to expand) -->
-    <div class="insights-panel minimized" id="insightsPanel">
-      <div class="insights-header" id="insightsToggle" title="Click to expand/collapse insights">
-        <span>📊 Insights <span class="insights-badge" id="insightsBadge" style="display: none;">0</span></span>
-        <span class="insights-toggle">▼</span>
+          <div class="settings-item" onclick="toggleSetting('glucoseReminders')">
+            <div class="settings-item-icon" style="background: var(--pastel-pink);">
+              <i class="fas fa-heartbeat" style="color: var(--text-primary);"></i>
       </div>
-      <div class="insights-content" id="insightsContent">
-        <div id="insightsData" style="color: #666; font-size: 11px;">
-          <p style="margin: 0; text-align: center; color: #999;">No insights yet. Insights will appear here after conversation.</p>
+            <div class="settings-item-content">
+              <div class="settings-item-title">Glucose Check Reminders</div>
+              <div class="settings-item-desc">Remind me to check blood sugar</div>
+        </div>
+            <div class="settings-item-toggle" id="toggle-glucoseReminders"></div>
+      </div>
+          
+          <div class="settings-section-title">Appearance</div>
+          <div class="settings-item" onclick="toggleSetting('darkMode')">
+            <div class="settings-item-icon" style="background: var(--pastel-orange);">
+              <i class="fas fa-moon" style="color: var(--text-primary);"></i>
+    </div>
+            <div class="settings-item-content">
+              <div class="settings-item-title">Dark Mode</div>
+              <div class="settings-item-desc">Switch between light and dark theme</div>
+            </div>
+            <div class="settings-item-toggle" id="toggle-darkMode"></div>
+  </div>
+
+          <div class="settings-section-title">Data & Privacy</div>
+          <div class="settings-item" onclick="toggleSetting('doctorReporting')">
+            <div class="settings-item-icon" style="background: var(--pastel-green);">
+              <i class="fas fa-user-md" style="color: var(--text-primary);"></i>
+            </div>
+            <div class="settings-item-content">
+              <div class="settings-item-title">Doctor Reporting</div>
+              <div class="settings-item-desc">Share data with your healthcare provider</div>
+            </div>
+            <div class="settings-item-toggle active" id="toggle-doctorReporting"></div>
+          </div>
+          
+          <div class="settings-section-title">Emergency Contacts</div>
+          <div class="settings-item" onclick="callEmergency('911')" style="background: #FEE2E2;">
+            <div class="settings-item-icon" style="background: #ef4444;">
+              <i class="fas fa-phone" style="color: white;"></i>
+            </div>
+            <div class="settings-item-content">
+              <div class="settings-item-title" style="color: #ef4444; font-weight: 600;">Emergency Services</div>
+              <div class="settings-item-desc" style="color: #ef4444;">Call 911</div>
+            </div>
+            <i class="fas fa-phone" style="color: #ef4444; font-size: 16px;"></i>
+          </div>
+          
+          <div class="settings-item" onclick="callEmergency('hospital')">
+            <div class="settings-item-icon" style="background: #FEE2E2;">
+              <i class="fas fa-hospital" style="color: #ef4444;"></i>
+            </div>
+            <div class="settings-item-content">
+              <div class="settings-item-title">Local Hospital</div>
+              <div class="settings-item-desc" id="hospital-number">Tap to set hospital number</div>
+            </div>
+            <i class="fas fa-phone" style="color: var(--text-secondary); font-size: 14px;"></i>
+          </div>
+          
+          <div class="settings-item" onclick="callEmergency('poison')">
+            <div class="settings-item-icon" style="background: var(--pastel-orange);">
+              <i class="fas fa-exclamation-triangle" style="color: var(--text-primary);"></i>
+            </div>
+            <div class="settings-item-content">
+              <div class="settings-item-title">Poison Control</div>
+              <div class="settings-item-desc">1-800-222-1222</div>
+            </div>
+            <i class="fas fa-phone" style="color: var(--text-secondary); font-size: 14px;"></i>
+          </div>
+          
+          <div class="settings-item" onclick="callEmergency('doctor')">
+            <div class="settings-item-icon" style="background: var(--pastel-green);">
+              <i class="fas fa-user-md" style="color: var(--text-primary);"></i>
+            </div>
+            <div class="settings-item-content">
+              <div class="settings-item-title">Your Doctor</div>
+              <div class="settings-item-desc" id="doctor-number">Tap to set doctor number</div>
+            </div>
+            <i class="fas fa-phone" style="color: var(--text-secondary); font-size: 14px;"></i>
+          </div>
+          
+          <div class="settings-item" onclick="showEmergencyContacts()">
+            <div class="settings-item-icon" style="background: var(--pastel-orange);">
+              <i class="fas fa-address-book" style="color: var(--text-primary);"></i>
+            </div>
+            <div class="settings-item-content">
+              <div class="settings-item-title">My Emergency Contacts</div>
+              <div class="settings-item-desc">Manage personal emergency contacts</div>
+            </div>
+            <i class="fas fa-chevron-right" style="color: var(--text-secondary); font-size: 12px;"></i>
+          </div>
+          
+          <div class="settings-section-title">Account</div>
+          
+          <div class="settings-item" onclick="showProfileInfo()">
+            <div class="settings-item-icon" style="background: var(--pastel-blue);">
+              <i class="fas fa-user" style="color: var(--text-primary);"></i>
+            </div>
+            <div class="settings-item-content">
+              <div class="settings-item-title">Profile Information</div>
+              <div class="settings-item-desc">View and edit your profile</div>
+            </div>
+            <i class="fas fa-chevron-right" style="color: var(--text-secondary); font-size: 12px;"></i>
+          </div>
+          
+          <div class="settings-item" onclick="logout()" style="color: #ef4444;">
+            <div class="settings-item-icon" style="background: #FEE2E2;">
+              <i class="fas fa-sign-out-alt" style="color: #ef4444;"></i>
+            </div>
+            <div class="settings-item-content">
+              <div class="settings-item-title" style="color: #ef4444;">Log Out</div>
+              <div class="settings-item-desc">Sign out of your account</div>
+            </div>
+            <i class="fas fa-chevron-right" style="color: var(--text-secondary); font-size: 12px;"></i>
+          </div>
         </div>
       </div>
+    </div>
+
+    <!-- Tab 1: Tracker -->
+    <div id="tracker-tab" class="tab-content active">
+      <!-- Health Dashboard -->
+      <div class="health-dashboard">
+        <div class="dashboard-header">
+        <div class="dashboard-greeting">
+          <div class="profile-avatar">A</div>
+          <div class="greeting-text">
+            <h3>Hello John</h3>
+            <p id="current-date"></p>
+            <p id="sync-status" style="font-size: 11px; color: var(--pastel-green); margin-top: 4px;">All synced</p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <div onclick="showEmergencyContacts()" style="width: 40px; height: 40px; border-radius: 50%; background: var(--pastel-orange); display: flex; align-items: center; justify-content: center; cursor: pointer;" title="Emergency Contacts">
+            <i class="fas fa-phone-alt" style="color: var(--text-primary);"></i>
+          </div>
+          <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--pastel-pink); display: flex; align-items: center; justify-content: center; cursor: pointer;" title="Notifications">
+            <i class="fas fa-bell" style="color: var(--text-primary);"></i>
+          </div>
+        </div>
+        </div>
+        
+        <div class="dashboard-title">Here's your health at a glance</div>
+        
+        <div class="health-metrics-grid">
+          <!-- Heart Rate Card -->
+          <div class="health-metric-card" style="background: var(--pastel-blue);">
+            <div class="metric-icon" style="background: rgba(255,255,255,0.3);">
+              <i class="fas fa-heart" style="color: var(--text-primary);"></i>
+            </div>
+            <div class="metric-value" id="heart-rate-value">72</div>
+            <div class="metric-label">Heart rate</div>
+            <div class="metric-chart">
+              <div class="bar-chart" id="heart-rate-chart"></div>
+            </div>
+    </div>
+    
+          <!-- Steps Card -->
+          <div class="health-metric-card" style="background: var(--pastel-purple);">
+            <div class="metric-icon" style="background: rgba(255,255,255,0.3);">
+              <i class="fas fa-walking" style="color: var(--text-primary);"></i>
+      </div>
+            <div class="metric-value" id="steps-value">2,200</div>
+            <div class="metric-label">Steps</div>
+            <div class="metric-chart">
+              <div class="line-chart" id="steps-chart"></div>
+        </div>
+      </div>
+          
+          <!-- Sleep Card (Full Width) -->
+          <div class="health-metric-card" style="grid-column: 1 / -1; background: var(--pastel-green);">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+              <div class="metric-icon" style="background: rgba(255,255,255,0.3);">
+                <i class="fas fa-moon" style="color: var(--text-primary);"></i>
+              </div>
+              <div style="flex: 1;">
+                <div class="metric-value" id="sleep-value">9h 30m</div>
+                <div class="metric-label">Total sleep</div>
+              </div>
+            </div>
+            <div class="sleep-chart" id="sleep-chart">
+              <!-- Sleep bars will be generated here -->
+            </div>
+    </div>
+  </div>
+
+        <!-- Daily Recommendations -->
+        <div class="recommendations-section">
+          <div class="recommendations-header">
+            <h3>Daily recommendations</h3>
+            <span class="see-all-link">See all</span>
+          </div>
+          <div class="recommendation-card" onclick="showHydrationTip()">
+            <div class="recommendation-icon" style="background: var(--pastel-blue);">
+              <i class="fas fa-tint" style="color: var(--text-primary);"></i>
+            </div>
+            <div class="recommendation-content">
+              <div class="recommendation-title">Stay Hydrated!</div>
+              <div class="recommendation-desc">Drink at least 2L of water today</div>
+            </div>
+            <div class="recommendation-arrow">
+              <i class="fas fa-chevron-right"></i>
+            </div>
+          </div>
+          <div class="recommendation-card" onclick="showActivityTip()">
+            <div class="recommendation-icon" style="background: var(--pastel-green);">
+              <i class="fas fa-running" style="color: var(--text-primary);"></i>
+            </div>
+            <div class="recommendation-content">
+              <div class="recommendation-title">Stay Active</div>
+              <div class="recommendation-desc">30 mins of activity today</div>
+            </div>
+            <div class="recommendation-arrow">
+              <i class="fas fa-chevron-right"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="tracker-section">
+        <h2>
+          <span class="section-icon icon-glucose"><i class="fas fa-heartbeat"></i></span>
+          Log Glucose
+        </h2>
+        <div class="log-card">
+          <div class="card-icon-wrapper" style="background: var(--pastel-blue);">
+            <i class="fas fa-tint" style="color: var(--text-primary);"></i>
+          </div>
+          <form class="log-form" id="glucose-form">
+            <div class="form-group">
+              <label>Reading (mg/dL)</label>
+              <input type="number" id="glucose-reading" required placeholder="e.g., 120" />
+            </div>
+            <div class="form-group">
+              <label>Type</label>
+              <select id="glucose-type" required>
+                <option value="fasting">Fasting</option>
+                <option value="post_meal">Post-Meal</option>
+                <option value="random">Random</option>
+                <option value="bedtime">Bedtime</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Notes (optional)</label>
+              <textarea id="glucose-notes" placeholder="Any notes about this reading..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Log Glucose</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="tracker-section">
+        <h2>
+          <span class="section-icon icon-medication"><i class="fas fa-pills"></i></span>
+          Log Medication
+        </h2>
+        <div class="log-card">
+          <div class="card-icon-wrapper" style="background: var(--pastel-purple);">
+            <i class="fas fa-capsules" style="color: var(--text-primary);"></i>
+          </div>
+          <form class="log-form" id="medication-form">
+            <div class="form-group">
+              <label>Medication Name</label>
+              <input type="text" id="medication-name" required placeholder="e.g., Metformin" />
+            </div>
+            <div class="form-group">
+              <label>Dosage</label>
+              <input type="text" id="medication-dosage" placeholder="e.g., 500mg" />
+            </div>
+            <div class="form-group">
+              <label>Taken?</label>
+              <select id="medication-taken" required>
+                <option value="true">Yes, taken</option>
+                <option value="false">No, missed</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Log Medication</button>
+          </form>
+        </div>
+    </div>
+    
+      <div class="tracker-section">
+        <h2>
+          <span class="section-icon icon-meal"><i class="fas fa-utensils"></i></span>
+          Log Meal
+        </h2>
+        <div class="log-card">
+          <div class="card-icon-wrapper" style="background: var(--pastel-pink);">
+            <i class="fas fa-apple-alt" style="color: var(--text-primary);"></i>
+          </div>
+          <form class="log-form" id="meal-form">
+            <div class="form-group">
+              <label>Meal Type</label>
+              <select id="meal-type" required>
+                <option value="breakfast">Breakfast</option>
+                <option value="lunch">Lunch</option>
+                <option value="dinner">Dinner</option>
+                <option value="snack">Snack</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <textarea id="meal-description" required placeholder="What did you eat?"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Carbs Estimate (g) - Optional</label>
+              <div style="display: flex; gap: 8px;">
+                <input type="number" id="meal-carbs" placeholder="e.g., 45" style="flex: 1;" />
+                <button type="button" onclick="showCarbGuide()" style="padding: 10px 16px; background: var(--pastel-orange); color: white; border: none; border-radius: 8px; cursor: pointer; white-space: nowrap;">
+                  <i class="fas fa-book"></i> Carb Guide
+                </button>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Log Meal</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="tracker-section">
+        <h2>
+          <span class="section-icon icon-activity"><i class="fas fa-running"></i></span>
+          Log Activity
+        </h2>
+        <div class="log-card">
+          <div class="card-icon-wrapper" style="background: var(--pastel-green);">
+            <i class="fas fa-dumbbell" style="color: var(--text-primary);"></i>
+          </div>
+          <form class="log-form" id="activity-form">
+            <div class="form-group">
+              <label>Activity Type</label>
+              <input type="text" id="activity-type" required placeholder="e.g., Walking, Running, Yoga" />
+            </div>
+            <div class="form-group">
+              <label>Duration (minutes)</label>
+              <input type="number" id="activity-duration" required placeholder="e.g., 30" />
+            </div>
+            <div class="form-group">
+              <label>Intensity</label>
+              <select id="activity-intensity" required>
+                <option value="light">Light</option>
+                <option value="moderate">Moderate</option>
+                <option value="vigorous">Vigorous</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Log Activity</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="tracker-section recent-logs">
+        <h2>
+          <span class="section-icon icon-logs"><i class="fas fa-history"></i></span>
+          Recent Logs
+        </h2>
+        <div id="recent-logs-container"></div>
+      </div>
+    </div>
+
+    <!-- Tab 2: AI Bot -->
+    <div id="chat-tab" class="tab-content">
+      <div class="specialist-selector" id="specialist-selector">
+        <h3>Who would you like to talk to today?</h3>
+        <div class="specialist-grid">
+          <div class="specialist-card" onclick="selectSpecialist('general')" data-specialist="general">
+            <div class="specialist-icon">💙</div>
+            <div class="specialist-name">General AI</div>
+            <div class="specialist-desc">All-around support</div>
+          </div>
+          <div class="specialist-card" onclick="selectSpecialist('nutrition')" data-specialist="nutrition">
+            <div class="specialist-icon">🍽️</div>
+            <div class="specialist-name">Nutrition AI</div>
+            <div class="specialist-desc">Meal planning & diet</div>
+          </div>
+          <div class="specialist-card" onclick="selectSpecialist('fitness')" data-specialist="fitness">
+            <div class="specialist-icon">🏃</div>
+            <div class="specialist-name">Fitness AI</div>
+            <div class="specialist-desc">Exercise & activity</div>
+          </div>
+          <div class="specialist-card" onclick="selectSpecialist('therapist')" data-specialist="therapist">
+            <div class="specialist-icon">🧘</div>
+            <div class="specialist-name">Therapist AI</div>
+            <div class="specialist-desc">Mental health support</div>
+          </div>
+          <div class="specialist-card" onclick="selectSpecialist('nurse')" data-specialist="nurse">
+            <div class="specialist-icon">👩‍⚕️</div>
+            <div class="specialist-name">Nurse AI</div>
+            <div class="specialist-desc">Medical guidance</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="chat-header" id="chat-header" style="display: none;">
+        <div class="chat-header-avatar" id="chat-avatar">💙</div>
+        <div class="chat-header-info">
+          <h3 id="chat-title">Diabuddies AI</h3>
+          <p id="chat-subtitle">Your diabetes support buddy</p>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <button onclick="showSpecialistSelector()" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: var(--text-primary); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; white-space: nowrap;" title="Change specialist">
+            Switch
+          </button>
+          <div class="chat-status">
+            <div class="chat-status-dot"></div>
+            <span>Online</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="quick-actions" id="quick-actions" style="display: none;">
+        <!-- Quick action buttons will be dynamically populated based on specialist -->
+      </div>
+      
+      <div class="quick-prompts" id="quick-prompts" style="display: none;">
+        <!-- Quick prompts will be dynamically populated based on specialist -->
+      </div>
+      
+      <div class="chat-messages" id="chat-messages" style="display: none;">
+        <div class="message agent" style="display: none;">
+          <div class="message-avatar">💙</div>
+          <div class="typing-indicator" id="typing-indicator">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="chat-input-area" id="chat-input-area" style="display: none;">
+        <div class="chat-input-wrapper">
+          <button class="voice-input-btn" id="voice-input-btn" title="Voice input">
+            <i class="fas fa-microphone"></i>
+          </button>
+          <input type="text" class="chat-input" id="chat-input" placeholder="Type a message or ask a question..." />
+        </div>
+        <button class="chat-send-btn" id="chat-send-btn">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tab 3: Community -->
+    <div id="community-tab" class="tab-content">
+      <button class="btn btn-primary create-post-btn" id="create-post-btn">
+        <i class="fas fa-plus-circle"></i> Create Post
+      </button>
+      <div id="community-posts"></div>
+    </div>
+
+    <!-- Tab 4: Doctor Communication -->
+    <div id="doctor-tab" class="tab-content">
+      <div id="doctor-messages-container"></div>
+      <div class="send-message-form">
+        <h3>Send Message to Doctor</h3>
+        <form id="doctor-message-form">
+          <div class="form-group">
+            <label>Message</label>
+            <textarea id="doctor-message-text" required placeholder="Type your message to your doctor..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Send Message</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+      <button class="nav-item active" data-tab="tracker">
+        <span class="nav-item-icon"><i class="fas fa-chart-line"></i></span>
+        <span>Tracker</span>
+      </button>
+      <button class="nav-item" data-tab="chat">
+        <span class="nav-item-icon"><i class="fas fa-comments"></i></span>
+        <span>AI Buddy</span>
+      </button>
+      <button class="nav-item" data-tab="community">
+        <span class="nav-item-icon"><i class="fas fa-users"></i></span>
+        <span>Community</span>
+      </button>
+      <button class="nav-item" data-tab="doctor">
+        <span class="nav-item-icon"><i class="fas fa-user-md"></i></span>
+        <span>Doctor</span>
+      </button>
     </div>
   </div>
 
   <script>
-    const statusEl = document.getElementById('status');
-    const messagesEl = document.getElementById('messages');
-    const inputEl = document.getElementById('input');
-    const sendBtn = document.getElementById('sendButton');
-    const callBtn = document.getElementById('callButton');
-    const generateInsightsBtn = document.getElementById('generateInsightsBtn');
+    // Global state
+    let currentPatientId = localStorage.getItem('patientId') || null;
+    let chatSessionId = null;
+    let currentTab = 'tracker';
+    let currentSpecialist = localStorage.getItem('selectedSpecialist') || null;
 
-    let sessionId = null;
-    let insightsData = null;
-    let insightsCount = 0;
-
-    const insightsPanel = document.getElementById('insightsPanel');
-    const insightsToggle = document.getElementById('insightsToggle');
-    const insightsContent = document.getElementById('insightsContent');
-    const insightsDataEl = document.getElementById('insightsData');
-    const insightsBadge = document.getElementById('insightsBadge');
-
-    // Toggle insights panel (expandable/collapsible)
-    insightsToggle.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const isExpanded = insightsPanel.classList.contains('expanded');
-      
-      if (isExpanded) {
-        // Collapse
-        insightsPanel.classList.remove('expanded');
-        insightsPanel.classList.add('minimized');
+    // Initialize patient ID (for demo, create one if not exists)
+    async function initPatient() {
+      if (!currentPatientId) {
+        try {
+          const res = await fetch('/api/patients', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: 'John',
+              email: 'abhya@example.com',
+              phone: '+1234567890'
+            })
+          });
+          const patient = await res.json();
+          currentPatientId = patient.patient_id;
+          localStorage.setItem('patientId', currentPatientId);
+          
+          // Create sample data for demo
+          await createSampleData(patient.patient_id);
+        } catch (err) {
+          console.error('Failed to create patient:', err);
+        }
       } else {
-        // Expand
-        insightsPanel.classList.remove('minimized');
-        insightsPanel.classList.add('expanded');
+        // Check if sample data exists, if not create it
+        await createSampleData(currentPatientId);
+      }
+    }
+    
+    // Create sample community posts and doctor messages for demo
+    async function createSampleData(patientId) {
+      try {
+        // Check if sample posts already exist
+        const postsRes = await fetch('/api/community/posts');
+        const existingPosts = await postsRes.json();
+        
+        if (existingPosts.length === 0) {
+          // Create sample patients first
+          const samplePatientNames = ['Maria', 'James', 'Patricia'];
+          const samplePatientIds = [patientId]; // Start with current patient
+          
+          for (const name of samplePatientNames) {
+            try {
+              const res = await fetch('/api/patients', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  name: name,
+                  email: `${name.toLowerCase()}@example.com`,
+                  phone: '+1234567890'
+                })
+              });
+              if (res.ok) {
+                const patient = await res.json();
+                samplePatientIds.push(patient.patient_id);
+              }
+            } catch (err) {
+              // If patient creation fails, we'll use existing patientId
+            }
+          }
+          
+          // Create sample community posts with images
+          const samplePosts = [
+            {
+              patient_id: samplePatientIds[0] || patientId,
+              content: "Just wanted to share - I've been using Diabuddies for 2 weeks now and my glucose levels have been so much more stable! The daily check-ins really help me stay on track. Anyone else seeing improvements? 💙"
+            },
+            {
+              patient_id: samplePatientIds[0] || patientId,
+              content: "Meal prep Sunday! Prepped my breakfast for the week - scrambled eggs with mixed veggies and salsa in meal prep containers. Having everything ready makes it so much easier to stay on track with my diabetes management! 🥗",
+              image_url: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&h=600&fit=crop",
+              image_caption: "Meal prep containers - Healthy breakfast ready for the week"
+            },
+            {
+              patient_id: samplePatientIds[1] || patientId,
+              content: "Quick tip: I've found that logging my meals right after eating (instead of waiting) helps me remember portion sizes better. The AI buddy is great at asking follow-up questions too!"
+            },
+            {
+              patient_id: samplePatientIds[1] || patientId,
+              content: "Hit the gym this morning! 45 minutes on the treadmill with an amazing view. Exercise really helps keep my glucose levels stable throughout the day. Feeling energized! 💪",
+              image_url: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=600&fit=crop",
+              image_caption: "Gym workout - Treadmill session with city view"
+            },
+            {
+              patient_id: samplePatientIds[2] || patientId,
+              content: "Had a rough day with high glucose readings, but my doctor sent me some helpful feedback through the app. Love that I can communicate directly without scheduling an appointment. This platform is a game-changer!"
+            },
+            {
+              patient_id: samplePatientIds[2] || patientId,
+              content: "Anyone else in rural Georgia? I love that I can just call the number and talk to the AI buddy - no internet needed! Perfect for when I'm out on the farm."
+            },
+            {
+              patient_id: samplePatientIds[2] || patientId,
+              content: "Back at the gym today! Treadmill workout with an amazing view really motivates me. Regular exercise has been key to managing my glucose levels. 💪",
+              image_url: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=600&fit=crop",
+              image_caption: "Gym workout - Treadmill with city view"
+            },
+            {
+              patient_id: samplePatientIds[0] || patientId,
+              content: "Meal prep is my secret weapon! Prepped these healthy breakfast containers with eggs, veggies, and salsa. Having balanced meals ready makes diabetes management so much easier! 🥗",
+              image_url: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&h=600&fit=crop",
+              image_caption: "Meal prep containers - Healthy breakfast with eggs and veggies"
+            },
+            {
+              patient_id: samplePatientIds[1] || patientId,
+              content: "Yoga session this evening! 20 minutes of gentle stretching really helps with my stress levels and glucose control. Highly recommend! 🧘‍♀️",
+              image_url: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&h=600&fit=crop",
+              image_caption: "Evening yoga - Stress relief"
+            }
+          ];
+          
+          const createdPostIds = [];
+          for (const post of samplePosts) {
+            try {
+              // Only send patient_id and content to backend (image_url will be stored in frontend)
+              const postData = {
+                patient_id: post.patient_id,
+                content: post.content
+              };
+              
+              const res = await fetch('/api/community/posts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(postData)
+              });
+              if (res.ok) {
+                const createdPost = await res.json();
+                // Store image data in a way we can retrieve it
+                if (post.image_url) {
+                  createdPost.image_url = post.image_url;
+                  createdPost.image_caption = post.image_caption;
+                }
+                createdPostIds.push(createdPost);
+              }
+            } catch (err) {
+              console.log('Error creating post:', err);
+            }
+          }
+          
+          // Store image data for posts (we'll merge this when displaying)
+          if (!window.samplePostImages) {
+            window.samplePostImages = {};
+          }
+          samplePosts.forEach((post, index) => {
+            if (post.image_url && createdPostIds[index] && createdPostIds[index].post_id) {
+              window.samplePostImages[createdPostIds[index].post_id] = {
+                image_url: post.image_url,
+                image_caption: post.image_caption
+              };
+            }
+          });
+          
+          // Also store in localStorage for persistence
+          try {
+            localStorage.setItem('samplePostImages', JSON.stringify(window.samplePostImages));
+          } catch (e) {
+            console.log('Could not save images to localStorage');
+          }
+          
+          // Add likes to some posts
+          if (createdPostIds.length > 0) {
+            for (let i = 0; i < Math.min(5, createdPostIds.length); i++) {
+              try {
+                const postId = createdPostIds[i].post_id || createdPostIds[i];
+                await fetch(`/api/community/posts/${postId}/like`, { method: 'POST' });
+                await fetch(`/api/community/posts/${postId}/like`, { method: 'POST' }); // Like twice
+              } catch (err) {}
+            }
+          }
+          
+          // Add sample comments
+          if (createdPostIds.length > 0) {
+            try {
+              const firstPostId = createdPostIds[0].post_id || createdPostIds[0];
+              const secondPostId = createdPostIds[1]?.post_id || createdPostIds[1];
+              
+              await fetch(`/api/community/posts/${firstPostId}/comments`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  patient_id: samplePatientIds[1] || patientId,
+                  content: "Same here! The reminders are so helpful. Keep it up! 💪"
+                })
+              });
+              await fetch(`/api/community/posts/${secondPostId}/comments`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  patient_id: samplePatientIds[0] || patientId,
+                  content: "Great tip! I'll try that too. Thanks for sharing!"
+                })
+              });
+            } catch (err) {}
+          }
+        }
+        
+        // Check if doctor messages exist
+        const messagesRes = await fetch(`/api/patients/${patientId}/messages`);
+        const existingMessages = await messagesRes.json();
+        
+        if (existingMessages.length === 0) {
+          // Create a sample doctor first
+          let doctorId = null;
+          try {
+            const doctorRes = await fetch('/api/doctors', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                name: 'Dr. Sarah Johnson',
+                email: 'sarah.johnson@healthcare.com',
+                phone: '+1-555-0123',
+                specialty: 'Endocrinology'
+              })
+            });
+            if (doctorRes.ok) {
+              const doctor = await doctorRes.json();
+              doctorId = doctor.doctor_id;
+            }
+          } catch (err) {
+            console.log('Could not create doctor, messages will be created without doctor_id');
+          }
+          
+          // Create sample doctor messages
+          const sampleMessages = [
+            {
+              message: "Hi John! I reviewed your weekly report and I'm pleased to see your glucose levels have been more stable this week. Your medication adherence is at 95% - excellent work! Keep up the great progress. - Dr. Sarah Johnson",
+              from_patient: false
+            },
+            {
+              message: "I noticed you've been logging your meals consistently. That's helping us understand your patterns better. One suggestion: try having your evening snack about 30 minutes earlier to help with your morning fasting glucose. Let me know how that works!",
+              from_patient: false
+            },
+            {
+              message: "Your activity levels look good this week! I see you've been getting regular walks in. Remember, even 15-20 minutes of light activity after meals can help with glucose control. Keep it up!",
+              from_patient: false
+            }
+          ];
+          
+          for (const msg of sampleMessages) {
+            try {
+              await fetch(`/api/patients/${patientId}/messages`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  ...msg,
+                  doctor_id: doctorId
+                })
+              });
+            } catch (err) {
+              console.log('Error creating sample message:', err);
+            }
+          }
+        }
+      } catch (err) {
+        console.log('Error creating sample data:', err);
+      }
+    }
+
+    // Tab Navigation
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const tab = item.dataset.tab;
+        switchTab(tab);
+      });
+    });
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+      });
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      document.getElementById(`${tab}-tab`).classList.add('active');
+      document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+
+      // Load tab-specific data
+      if (tab === 'tracker') {
+        updateCurrentDate();
+        loadHealthMetrics();
+        loadRecentLogs();
+      } else if (tab === 'chat') {
+        initChat();
+      } else if (tab === 'community') {
+        loadCommunityPosts();
+      } else if (tab === 'doctor') {
+        loadDoctorMessages();
+      }
+    }
+
+    // ==================== TRACKER ====================
+    document.getElementById('glucose-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentPatientId) {
+        alert('Please wait, initializing...');
+        return;
+      }
+      const reading = parseFloat(document.getElementById('glucose-reading').value);
+      const type = document.getElementById('glucose-type').value;
+      const notes = document.getElementById('glucose-notes').value;
+
+      // Show offline instant feedback card immediately (works offline)
+      showGlucoseFeedbackCard(reading, type);
+
+      // Try to sync to server (will queue if offline)
+      try {
+        const res = await fetch(`/api/patients/${currentPatientId}/glucose`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reading, reading_type: type, notes })
+        });
+        if (res.ok) {
+          // Success - remove from offline queue if it was there
+          removeFromOfflineQueue('glucose', { reading, reading_type: type, notes });
+          loadRecentLogs();
+      } else {
+          // Failed - add to offline queue
+          addToOfflineQueue('glucose', { reading, reading_type: type, notes });
+        }
+      } catch (err) {
+        // Offline or error - add to queue
+        addToOfflineQueue('glucose', { reading, reading_type: type, notes });
+        console.log('Offline - data queued for sync');
+      }
+      
+      e.target.reset();
+    });
+
+    // Offline instant feedback card for glucose readings
+    function showGlucoseFeedbackCard(reading, readingType) {
+      // Get care plan targets from localStorage or use defaults
+      const carePlan = JSON.parse(localStorage.getItem('carePlan') || '{}');
+      const targets = carePlan.glucose_targets || {
+        fasting_min: 80, fasting_max: 130,
+        post_meal_min: 80, post_meal_max: 180
+      };
+      
+      // Determine target range based on reading type
+      let minTarget, maxTarget;
+      if (readingType === 'fasting') {
+        minTarget = targets.fasting_min || 80;
+        maxTarget = targets.fasting_max || 130;
+      } else {
+        minTarget = targets.post_meal_min || 80;
+        maxTarget = targets.post_meal_max || 180;
+      }
+      
+      // Categorize reading
+      let category, color, icon, title, instructions;
+      
+      if (reading < 70) {
+        category = 'critical_low';
+        color = '#FEE2E2';
+        icon = '🚨';
+        title = 'CRITICAL LOW BLOOD SUGAR';
+        instructions = [
+          'Treat immediately with 15g of fast-acting carbs:',
+          '• 4 glucose tablets, OR',
+          '• 4 oz (1/2 cup) fruit juice, OR',
+          '• 1 tablespoon honey or sugar, OR',
+          '• 5-6 hard candies',
+          '',
+          'Re-check in 15 minutes.',
+          'If still below 70, repeat treatment.',
+          '',
+          '⚠️ If symptoms worsen or you cannot treat yourself, call 911 immediately.'
+        ];
+      } else if (reading < minTarget) {
+        category = 'warning_low';
+        color = '#FEF3C7';
+        icon = '⚠️';
+        title = 'Below Target Range';
+        instructions = [
+          `Your reading (${reading} mg/dL) is below your target range (${minTarget}-${maxTarget} mg/dL).`,
+          '',
+          'Consider:',
+          '• Having a small snack with carbs',
+          '• Re-checking in 30 minutes',
+          '• Contacting your doctor if this persists'
+        ];
+      } else if (reading > 300) {
+        category = 'critical_high';
+        color = '#FEE2E2';
+        icon = '🚨';
+        title = 'CRITICAL HIGH BLOOD SUGAR';
+        instructions = [
+          `Your reading (${reading} mg/dL) is dangerously high.`,
+          '',
+          'Take action:',
+          '• Contact your doctor immediately',
+          '• If you have symptoms (nausea, vomiting, confusion), go to the emergency room',
+          '• Check for ketones if you have a meter',
+          '',
+          '⚠️ If symptoms are severe, call 911 immediately.'
+        ];
+      } else if (reading > maxTarget) {
+        category = 'warning_high';
+        color = '#FEF3C7';
+        icon = '⚠️';
+        title = 'Above Target Range';
+        instructions = [
+          `Your reading (${reading} mg/dL) is above your target range (${minTarget}-${maxTarget} mg/dL).`,
+          '',
+          'Consider:',
+          '• Reviewing what you ate recently',
+          '• Checking if you took your medication',
+          '• Light activity if appropriate',
+          '• Contacting your doctor if this is frequent'
+        ];
+      } else {
+        category = 'target';
+        color = '#D1FAE5';
+        icon = '✅';
+        title = 'In Target Range';
+        instructions = [
+          `Great! Your reading (${reading} mg/dL) is within your target range (${minTarget}-${maxTarget} mg/dL).`,
+          '',
+          'Keep up the good work! Continue following your care plan.'
+        ];
+      }
+      
+      // Create and show feedback card
+      const card = document.createElement('div');
+      card.className = 'glucose-feedback-card';
+      card.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        max-width: 90%;
+        width: 400px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        z-index: 10000;
+        border-left: 6px solid ${color};
+        animation: slideIn 0.3s ease-out;
+      `;
+      
+      card.innerHTML = `
+        <div style="text-align: center; margin-bottom: 16px;">
+          <div style="font-size: 48px; margin-bottom: 8px;">${icon}</div>
+          <h2 style="margin: 0; color: var(--text-primary); font-size: 20px; font-weight: 600;">${title}</h2>
+        </div>
+        <div style="background: ${color}; padding: 16px; border-radius: 12px; margin-bottom: 16px;">
+          <div style="font-size: 14px; line-height: 1.8; color: var(--text-primary); white-space: pre-line;">
+            ${instructions.join('\n')}
+          </div>
+        </div>
+        <button onclick="this.parentElement.remove()" style="
+          width: 100%;
+          padding: 12px;
+          background: var(--pastel-blue);
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-size: 16px;
+          font-weight: 600;
+          cursor: pointer;
+        ">Got it</button>
+      `;
+      
+      // Add animation
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translate(-50%, -60%);
+          }
+          to {
+            opacity: 1;
+            transform: translate(-50%, -50%);
+          }
+        }
+      `;
+      if (!document.getElementById('glucose-feedback-styles')) {
+        style.id = 'glucose-feedback-styles';
+        document.head.appendChild(style);
+      }
+      
+      document.body.appendChild(card);
+      
+      // Auto-close after 30 seconds for non-critical, 60 seconds for critical
+      const autoClose = category.includes('critical') ? 60000 : 30000;
+      setTimeout(() => {
+        if (card.parentElement) {
+          card.remove();
+        }
+      }, autoClose);
+    }
+
+    document.getElementById('medication-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentPatientId) return;
+      const name = document.getElementById('medication-name').value;
+      const dosage = document.getElementById('medication-dosage').value;
+      const taken = document.getElementById('medication-taken').value === 'true';
+
+      try {
+        const res = await fetch(`/api/patients/${currentPatientId}/medication`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ medication_name: name, dosage, taken })
+        });
+        if (res.ok) {
+          removeFromOfflineQueue('medication', { medication_name: name, dosage, taken });
+          e.target.reset();
+          loadRecentLogs();
+        } else {
+          addToOfflineQueue('medication', { medication_name: name, dosage, taken });
+        }
+      } catch (err) {
+        addToOfflineQueue('medication', { medication_name: name, dosage, taken });
+        console.log('Offline - medication queued for sync');
       }
     });
 
-    function addMessage(text, who) {
-      const div = document.createElement('div');
-      div.className = 'msg ' + who;
-      div.textContent = text;
-      messagesEl.appendChild(div);
-      messagesEl.scrollTop = messagesEl.scrollHeight;
-    }
+    document.getElementById('meal-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentPatientId) return;
+      const mealType = document.getElementById('meal-type').value;
+      const description = document.getElementById('meal-description').value;
+      const carbs = document.getElementById('meal-carbs').value ? parseFloat(document.getElementById('meal-carbs').value) : null;
 
-    function startCall() {
-      statusEl.textContent = 'In check-in…';
-      messagesEl.innerHTML = '';
-      sessionId = Date.now().toString();
-      insightsData = null;
-      insightsCount = 0;
-      updateInsightsBadge();
-      generateInsightsBtn.style.display = 'block';
-      // Reset insights panel
-      insightsPanel.classList.remove('expanded');
-      insightsPanel.classList.add('minimized');
-      checkInsightsEmpty();
-      addMessage("Hi, I'm Diabuddies, your diabetes buddy. How are you doing today?", "agent");
-    }
-    
-    generateInsightsBtn.addEventListener('click', generateInsights);
-
-    function updateInsightsBadge() {
-      insightsBadge.textContent = insightsCount;
-      if (insightsCount > 0) {
-        insightsBadge.style.display = 'inline-block';
-      } else {
-        insightsBadge.style.display = 'none';
-      }
-    }
-    
-    // Show empty state message when no insights
-    function checkInsightsEmpty() {
-      const hasData = insightsDataEl.innerHTML.trim() !== '' && 
-                      !insightsDataEl.innerHTML.includes('No insights yet');
-      if (!hasData && insightsCount === 0) {
-        insightsDataEl.innerHTML = '<p style="margin: 0; text-align: center; color: #999;">No insights yet. Insights will appear here after conversation.</p>';
-      }
-    }
-
-    function updateInsightsDisplay(data, isEmergency = false) {
-      if (!data) return;
-      
-      insightsData = data;
-      insightsCount++;
-      updateInsightsBadge();
-      
-      let html = '';
-      
-      // Extracted Data
-      if (data.extracted) {
-        const extracted = data.extracted;
-        html += '<div class="data-panel" style="margin-bottom: 10px;">';
-        html += '<h4>📊 Extracted Data</h4>';
-        if (extracted.glucose !== null && extracted.glucose !== undefined) {
-          html += `<div class="data-item">Glucose: ${extracted.glucose} mg/dL</div>`;
-        }
-        if (extracted.medications_taken !== null && extracted.medications_taken !== undefined) {
-          html += `<div class="data-item">Medications: ${extracted.medications_taken ? 'Taken ✓' : 'Not taken'}</div>`;
-        }
-        if (extracted.mood) {
-          html += `<div class="data-item">Mood: ${extracted.mood}</div>`;
-        }
-        if (extracted.symptoms && extracted.symptoms.length > 0) {
-          html += `<div class="data-item">Symptoms: ${extracted.symptoms.join(', ')}</div>`;
-        }
-        if (extracted.concerns) {
-          html += `<div class="data-item">Concerns: ${extracted.concerns}</div>`;
-        }
-        html += '</div>';
-      }
-      
-      // Risk Assessment
-      if (data.risk) {
-        const risk = data.risk;
-        html += '<div class="data-panel" style="margin-bottom: 10px;">';
-        html += '<h4>⚠️ Risk Assessment</h4>';
-        if (risk.level) {
-          html += `<div class="risk-level ${risk.level}">Risk Level: ${risk.level.toUpperCase()}</div>`;
-        }
-        if (risk.overall_risk) {
-          html += `<div class="data-item" style="margin-top: 6px;">${risk.overall_risk}</div>`;
-        }
-        if (risk.recommendations && risk.recommendations.length > 0) {
-          html += `<div class="data-item" style="margin-top: 6px;"><strong>Recommendations:</strong><ul style="margin: 4px 0; padding-left: 20px;">`;
-          risk.recommendations.forEach(rec => {
-            html += `<li>${rec}</li>`;
-          });
-          html += `</ul></div>`;
-        }
-        html += '</div>';
-      }
-      
-      // Summary
-      if (data.summary) {
-        html += '<div class="summary-box">';
-        html += `<strong>📝 Daily Summary:</strong><br>${data.summary}`;
-        html += '</div>';
-      }
-      
-      insightsDataEl.innerHTML = html;
-      
-      // Auto-expand if emergency or if user wants to see insights
-      if (isEmergency) {
-        insightsPanel.classList.add('expanded');
-        insightsPanel.classList.remove('minimized');
-      }
-      
-      // If panel is already expanded, keep it expanded
-      // Otherwise, user can click to expand
-    }
-
-    async function generateInsights() {
-      if (!sessionId) return;
-      
-      statusEl.textContent = 'Generating insights…';
-      
       try {
-        const res = await fetch('/api/insights', {
+        const res = await fetch(`/api/patients/${currentPatientId}/meal`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sessionId })
+          body: JSON.stringify({ meal_type: mealType, description, carbs_estimate: carbs })
         });
-        const data = await res.json();
-        updateInsightsDisplay(data, false);
-        statusEl.textContent = 'In check-in…';
+        if (res.ok) {
+          removeFromOfflineQueue('meal', { meal_type: mealType, description, carbs_estimate: carbs });
+          e.target.reset();
+          loadRecentLogs();
+        } else {
+          addToOfflineQueue('meal', { meal_type: mealType, description, carbs_estimate: carbs });
+        }
       } catch (err) {
-        console.error(err);
-        statusEl.textContent = 'Error generating insights';
+        addToOfflineQueue('meal', { meal_type: mealType, description, carbs_estimate: carbs });
+        console.log('Offline - meal queued for sync');
+      }
+    });
+
+    document.getElementById('activity-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentPatientId) return;
+      const type = document.getElementById('activity-type').value;
+      const duration = parseInt(document.getElementById('activity-duration').value);
+      const intensity = document.getElementById('activity-intensity').value;
+
+      try {
+        const res = await fetch(`/api/patients/${currentPatientId}/activity`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ activity_type: type, duration_minutes: duration, intensity })
+        });
+        if (res.ok) {
+          removeFromOfflineQueue('activity', { activity_type: type, duration_minutes: duration, intensity });
+          e.target.reset();
+          loadRecentLogs();
+          loadHealthMetrics(); // Update steps when activity is logged
+        } else {
+          addToOfflineQueue('activity', { activity_type: type, duration_minutes: duration, intensity });
+        }
+      } catch (err) {
+        addToOfflineQueue('activity', { activity_type: type, duration_minutes: duration, intensity });
+        console.log('Offline - activity queued for sync');
+      }
+    });
+
+    async function loadRecentLogs() {
+      if (!currentPatientId) return;
+      try {
+        const res = await fetch(`/api/patients/${currentPatientId}/logs?days=7`);
+        const data = await res.json();
+        const container = document.getElementById('recent-logs-container');
+        container.innerHTML = '';
+
+        const allLogs = [
+          ...data.glucose.map(log => ({ ...log, type: 'glucose', label: `Glucose: ${log.reading} mg/dL (${log.reading_type})` })),
+          ...data.medication.map(log => ({ ...log, type: 'medication', label: `${log.medication_name}: ${log.taken ? 'Taken' : 'Missed'}` })),
+          ...data.meals.map(log => ({ ...log, type: 'meal', label: `${log.meal_type}: ${log.description}` })),
+          ...data.activity.map(log => ({ ...log, type: 'activity', label: `${log.activity_type}: ${log.duration_minutes} min` }))
+        ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 10);
+
+        if (allLogs.length === 0) {
+          container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><p>No recent logs</p></div>';
+          return;
+        }
+
+        const iconMap = {
+          glucose: { icon: 'fa-heartbeat', color: 'var(--pastel-blue)' },
+          medication: { icon: 'fa-pills', color: 'var(--pastel-purple)' },
+          meal: { icon: 'fa-utensils', color: 'var(--pastel-pink)' },
+          activity: { icon: 'fa-running', color: 'var(--pastel-green)' }
+        };
+        
+        allLogs.forEach(log => {
+      const div = document.createElement('div');
+          div.className = 'log-item';
+          const date = new Date(log.timestamp).toLocaleString();
+          const iconInfo = iconMap[log.type] || { icon: 'fa-circle', color: 'var(--pastel-blue)' };
+          div.innerHTML = `
+            <div class="log-item-icon" style="background: ${iconInfo.color};">
+              <i class="fas ${iconInfo.icon}" style="color: var(--text-primary);"></i>
+            </div>
+            <div style="flex: 1;">
+              <strong>${log.type}</strong> - ${log.label}<br><small style="color: var(--text-secondary);">${date}</small>
+            </div>
+          `;
+          container.appendChild(div);
+        });
+      } catch (err) {
+        console.error('Error loading logs:', err);
       }
     }
 
-    async function sendMessage() {
-      const text = inputEl.value.trim();
-      if (!text) return;
-      inputEl.value = '';
-      addMessage(text, 'user');
+    // ==================== CHAT ====================
+    function showSpecialistSelector() {
+      // Clear current specialist selection
+      currentSpecialist = null;
+      localStorage.removeItem('selectedSpecialist');
+      
+      // Show selector, hide chat
+      document.getElementById('specialist-selector').style.display = 'block';
+      document.getElementById('chat-header').style.display = 'none';
+      document.getElementById('quick-actions').style.display = 'none';
+      document.getElementById('quick-prompts').style.display = 'none';
+      document.getElementById('chat-messages').style.display = 'none';
+      document.getElementById('chat-input-area').style.display = 'none';
+      
+      // Clear chat messages
+      document.getElementById('chat-messages').innerHTML = '<div class="message agent" style="display: none;"><div class="message-avatar">💙</div><div class="typing-indicator" id="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>';
+      
+      // Reset session
+      chatSessionId = null;
+    }
+    
+    function selectSpecialist(specialistType) {
+      currentSpecialist = specialistType;
+      localStorage.setItem('selectedSpecialist', specialistType);
+      
+      // Update UI
+      document.querySelectorAll('.specialist-card').forEach(card => {
+        card.classList.remove('selected');
+      });
+      document.querySelector(`[data-specialist="${specialistType}"]`).classList.add('selected');
+      
+      // Hide selector and show chat
+      document.getElementById('specialist-selector').style.display = 'none';
+      document.getElementById('chat-header').style.display = 'flex';
+      
+      // Show/hide quick actions based on specialist
+      const actions = {
+        'general': ['glucose', 'medication', 'meal', 'activity'],
+        'nutrition': ['glucose', 'meal'],
+        'fitness': ['glucose', 'activity'],
+        'therapist': [],
+        'nurse': ['glucose', 'medication']
+      };
+      const specialistActions = actions[specialistType] || actions['general'];
+      document.getElementById('quick-actions').style.display = specialistActions.length > 0 ? 'grid' : 'none';
+      
+      document.getElementById('quick-prompts').style.display = 'flex';
+      document.getElementById('chat-messages').style.display = 'block';
+      document.getElementById('chat-input-area').style.display = 'flex';
+      
+      // Update header based on specialist
+      updateChatHeader(specialistType);
+      
+      // Update quick actions and prompts based on specialist
+      updateQuickActions(specialistType);
+      updateQuickPrompts(specialistType);
+      
+      // Initialize chat with specialist-specific greeting
+      if (!chatSessionId) {
+        chatSessionId = Date.now().toString();
+        const greeting = getSpecialistGreeting(specialistType);
+        addChatMessage(greeting, 'agent');
+      }
+    }
+    
+    function updateQuickActions(specialistType) {
+      const quickActionsContainer = document.getElementById('quick-actions');
+      quickActionsContainer.innerHTML = '';
+      
+      const actions = {
+        'general': ['glucose', 'medication', 'meal', 'activity'],
+        'nutrition': ['glucose', 'meal'],
+        'fitness': ['glucose', 'activity'],
+        'therapist': [], // No logging buttons for therapist
+        'nurse': ['glucose', 'medication']
+      };
+      
+      const actionConfigs = {
+        'glucose': {
+          class: 'log-glucose',
+          icon: 'fas fa-heartbeat',
+          label: 'Log Glucose',
+          onclick: 'quickLogGlucose()'
+        },
+        'medication': {
+          class: 'log-medication',
+          icon: 'fas fa-pills',
+          label: 'Log Medication',
+          onclick: 'quickLogMedication()'
+        },
+        'meal': {
+          class: 'log-meal',
+          icon: 'fas fa-utensils',
+          label: 'Log Meal',
+          onclick: 'quickLogMeal()'
+        },
+        'activity': {
+          class: 'log-activity',
+          icon: 'fas fa-running',
+          label: 'Log Activity',
+          onclick: 'quickLogActivity()'
+        }
+      };
+      
+      const specialistActions = actions[specialistType] || actions['general'];
+      
+      specialistActions.forEach(actionType => {
+        const config = actionConfigs[actionType];
+        const button = document.createElement('button');
+        button.className = `quick-action-btn ${config.class}`;
+        button.title = config.label;
+        button.onclick = new Function(config.onclick);
+        
+        button.innerHTML = `
+          <div class="quick-action-icon">
+            <i class="${config.icon}"></i>
+          </div>
+          <div class="quick-action-label">${config.label}</div>
+        `;
+        
+        quickActionsContainer.appendChild(button);
+      });
+      
+      // Update grid columns based on number of buttons
+      if (specialistActions.length > 0) {
+        quickActionsContainer.style.gridTemplateColumns = `repeat(${specialistActions.length}, 1fr)`;
+      }
+    }
+    
+    function updateQuickPrompts(specialistType) {
+      const quickPromptsContainer = document.getElementById('quick-prompts');
+      quickPromptsContainer.innerHTML = '';
+      
+      const prompts = {
+        'general': [
+          { text: '🩺 Symptoms', prompt: 'What are common diabetes symptoms I should watch for?' },
+          { text: '💡 Blood sugar tips', prompt: 'How do I manage my blood sugar?' },
+          { text: '🍽️ Nutrition', prompt: 'What should I eat for diabetes?' },
+          { text: '🏃 Fitness', prompt: 'What exercises are safe for diabetes?' },
+          { text: '💊 Medication', prompt: 'How does my medication work?' },
+          { text: '🧘 Mental health', prompt: 'I feel stressed about my diabetes' }
+        ],
+        'nutrition': [
+          { text: '🍽️ Meal planning', prompt: 'Help me plan my meals for diabetes' },
+          { text: '📊 Carb counting', prompt: 'How do I count carbs for my meals?' },
+          { text: '🥗 Healthy foods', prompt: 'What are the best foods for diabetes?' },
+          { text: '⏰ Meal timing', prompt: 'When should I eat to manage my blood sugar?' },
+          { text: '🍞 Regional foods', prompt: 'How can I enjoy biscuits and grits with diabetes?' }
+        ],
+        'fitness': [
+          { text: '🏃 Exercise plan', prompt: 'What exercise plan is good for diabetes?' },
+          { text: '📉 Blood sugar & exercise', prompt: 'How does exercise affect my blood sugar?' },
+          { text: '🚶 Walking tips', prompt: 'How much walking should I do?' },
+          { text: '⏰ Best time to exercise', prompt: 'When is the best time to exercise?' },
+          { text: '🏡 Home exercises', prompt: 'What exercises can I do at home?' }
+        ],
+        'therapist': [
+          { text: '😔 Feeling overwhelmed', prompt: 'I feel overwhelmed by diabetes' },
+          { text: '😰 Stress management', prompt: 'How can I manage stress with diabetes?' },
+          { text: '😞 Diabetes burnout', prompt: 'I feel burned out from managing diabetes' },
+          { text: '💪 Coping strategies', prompt: 'What are good coping strategies for diabetes?' },
+          { text: '🤝 Support', prompt: 'I need emotional support with diabetes' }
+        ],
+        'nurse': [
+          { text: '🩺 Symptoms', prompt: 'What symptoms should I watch for with diabetes?' },
+          { text: '💊 Medication questions', prompt: 'How does my medication work?' },
+          { text: '📞 When to call doctor', prompt: 'When should I contact my doctor?' },
+          { text: '📊 Understanding results', prompt: 'Help me understand my test results' },
+          { text: '⚠️ Warning signs', prompt: 'What are warning signs I should not ignore?' }
+        ]
+      };
+      
+      const specialistPrompts = prompts[specialistType] || prompts['general'];
+      
+      specialistPrompts.forEach(p => {
+        const button = document.createElement('button');
+        button.className = 'quick-prompt';
+        button.textContent = p.text;
+        button.onclick = () => sendQuickPrompt(p.prompt);
+        quickPromptsContainer.appendChild(button);
+      });
+    }
+    
+    function updateChatHeader(specialistType) {
+      const specialists = {
+        'general': { icon: '💙', name: 'Diabuddies AI', subtitle: 'Your diabetes support buddy' },
+        'nutrition': { icon: '🍽️', name: 'Nutrition AI', subtitle: 'Meal planning & diet expert' },
+        'fitness': { icon: '🏃', name: 'Fitness AI', subtitle: 'Exercise & activity coach' },
+        'therapist': { icon: '🧘', name: 'Therapist AI', subtitle: 'Mental health support' },
+        'nurse': { icon: '👩‍⚕️', name: 'Nurse AI', subtitle: 'Medical guidance & care' }
+      };
+      
+      const specialist = specialists[specialistType] || specialists['general'];
+      document.getElementById('chat-avatar').textContent = specialist.icon;
+      document.getElementById('chat-title').textContent = specialist.name;
+      document.getElementById('chat-subtitle').textContent = specialist.subtitle;
+    }
+    
+    function getSpecialistGreeting(specialistType) {
+      const greetings = {
+        'general': "Hi John! 👋 I'm Diabuddies, your diabetes support buddy. How can I help you today?",
+        'nutrition': "Hi John! 👋 I'm your Nutrition AI. I can help with meal planning, carb counting, and healthy eating for diabetes. What would you like to know?",
+        'fitness': "Hi John! 👋 I'm your Fitness AI. I can help you with exercise plans, activity ideas, and how exercise affects your blood sugar. What would you like to know?",
+        'therapist': "Hi John! 👋 I'm your Therapist AI. I'm here to support your mental health and help you manage the emotional side of living with diabetes. How are you feeling today?",
+        'nurse': "Hi John! 👋 I'm your Nurse AI. I can help answer medical questions, explain symptoms, and guide you on when to contact your doctor. How can I assist you today?"
+      };
+      return greetings[specialistType] || greetings['general'];
+    }
+    
+    function initChat() {
+      // If specialist already selected, show chat interface
+      if (currentSpecialist) {
+        document.getElementById('specialist-selector').style.display = 'none';
+        document.getElementById('chat-header').style.display = 'flex';
+        // Show/hide quick actions based on specialist
+        const actions = {
+          'general': ['glucose', 'medication', 'meal', 'activity'],
+          'nutrition': ['glucose', 'meal'],
+          'fitness': ['glucose', 'activity'],
+          'therapist': [],
+          'nurse': ['glucose', 'medication']
+        };
+        const specialistActions = actions[currentSpecialist] || actions['general'];
+        document.getElementById('quick-actions').style.display = specialistActions.length > 0 ? 'grid' : 'none';
+        
+        document.getElementById('quick-prompts').style.display = 'flex';
+        document.getElementById('chat-messages').style.display = 'block';
+        document.getElementById('chat-input-area').style.display = 'flex';
+        updateChatHeader(currentSpecialist);
+        updateQuickActions(currentSpecialist);
+        updateQuickPrompts(currentSpecialist);
+        
+        if (!chatSessionId) {
+          chatSessionId = Date.now().toString();
+          const greeting = getSpecialistGreeting(currentSpecialist);
+          addChatMessage(greeting, 'agent');
+        }
+      } else {
+        // Show specialist selector
+        document.getElementById('specialist-selector').style.display = 'block';
+        document.getElementById('chat-header').style.display = 'none';
+        document.getElementById('quick-actions').style.display = 'none';
+        document.getElementById('quick-prompts').style.display = 'none';
+        document.getElementById('chat-messages').style.display = 'none';
+        document.getElementById('chat-input-area').style.display = 'none';
+      }
+      
+      // Hide quick prompts after first message
+      const messages = document.getElementById('chat-messages').children;
+      if (messages.length > 1) {
+        document.getElementById('quick-prompts').style.display = 'none';
+      }
+    }
 
-      const payload = { sessionId, message: text, generateInsights: false };
-      statusEl.textContent = 'Thinking…';
+    function addChatMessage(text, who) {
+      const container = document.getElementById('chat-messages');
+      const typingIndicator = document.getElementById('typing-indicator');
+      if (typingIndicator && typingIndicator.classList.contains('show')) {
+        typingIndicator.classList.remove('show');
+      }
+      
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${who}`;
+      
+      let avatar = '💙';
+      if (who === 'user') {
+        avatar = '<i class="fas fa-user"></i>';
+      } else if (currentSpecialist) {
+        const specialistIcons = {
+          'general': '💙',
+          'nutrition': '🍽️',
+          'fitness': '🏃',
+          'therapist': '🧘',
+          'nurse': '👩‍⚕️'
+        };
+        avatar = specialistIcons[currentSpecialist] || '💙';
+      }
+      
+      messageDiv.innerHTML = `
+        <div class="message-avatar">${avatar}</div>
+        <div class="message-bubble">${text}</div>
+      `;
+      
+      container.appendChild(messageDiv);
+      container.scrollTop = container.scrollHeight;
+      
+      // Hide quick prompts after user sends first message
+      if (who === 'user') {
+        const quickPrompts = document.getElementById('quick-prompts');
+        if (quickPrompts && quickPrompts.style.display !== 'none') {
+          quickPrompts.style.display = 'none';
+        }
+      }
+    }
+    
+    function showTypingIndicator() {
+      const typingIndicator = document.getElementById('typing-indicator');
+      if (typingIndicator) {
+        typingIndicator.classList.add('show');
+        const container = document.getElementById('chat-messages');
+        container.scrollTop = container.scrollHeight;
+      }
+    }
+    
+    function hideTypingIndicator() {
+      const typingIndicator = document.getElementById('typing-indicator');
+      if (typingIndicator) {
+        typingIndicator.classList.remove('show');
+      }
+    }
+    
+    function sendQuickPrompt(prompt) {
+      document.getElementById('chat-input').value = prompt;
+      sendChatMessage();
+    }
+    
+    // ==================== QUICK LOGGING ACTIONS ====================
+    function quickLogGlucose() {
+      const reading = prompt('Enter your glucose reading (mg/dL):');
+      if (reading && !isNaN(reading)) {
+        const type = prompt('Reading type:\n1. Fasting\n2. Post-Meal\n3. Random\n4. Bedtime\n\nEnter number (1-4):', '3');
+        const typeMap = { '1': 'fasting', '2': 'post_meal', '3': 'random', '4': 'bedtime' };
+        const readingType = typeMap[type] || 'random';
+        
+        // Show offline feedback immediately
+        showGlucoseFeedbackCard(parseFloat(reading), readingType);
+        
+        // Try to log
+        if (currentPatientId) {
+          fetch(`/api/patients/${currentPatientId}/glucose`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              reading: parseFloat(reading), 
+              reading_type: readingType 
+            })
+          }).then(() => {
+            addChatMessage(`✅ Logged glucose: ${reading} mg/dL (${readingType})`, 'agent');
+            loadRecentLogs();
+          }).catch(() => {
+            addToOfflineQueue('glucose', { reading: parseFloat(reading), reading_type: readingType });
+            addChatMessage(`📝 Glucose reading saved (will sync when online)`, 'agent');
+          });
+        }
+      }
+    }
+    
+    function quickLogMedication() {
+      if (!currentPatientId) {
+        alert('Please wait, initializing...');
+        return;
+      }
+      
+      // Try to get medication from care plan
+      fetch(`/api/patients/${currentPatientId}`)
+        .then(res => res.json())
+        .then(patient => {
+          let medicationName = 'Medication';
+          if (patient.care_plan && patient.care_plan.medications && patient.care_plan.medications.length > 0) {
+            medicationName = patient.care_plan.medications[0].name;
+          }
+          
+          const taken = confirm(`Did you take ${medicationName}?`);
+          const dosage = prompt(`Dosage (e.g., 500mg):`, '');
+          
+          if (currentPatientId) {
+            fetch(`/api/patients/${currentPatientId}/medication`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                medication_name: medicationName,
+                dosage: dosage || '',
+                taken: taken
+              })
+            }).then(() => {
+              addChatMessage(`✅ Logged: ${medicationName} ${taken ? 'taken' : 'missed'}`, 'agent');
+              loadRecentLogs();
+            }).catch(() => {
+              addToOfflineQueue('medication', { medication_name: medicationName, dosage, taken });
+              addChatMessage(`📝 Medication logged (will sync when online)`, 'agent');
+            });
+          }
+        }).catch(() => {
+          const name = prompt('Medication name:');
+          if (name) {
+            const taken = confirm('Did you take it?');
+            if (currentPatientId) {
+              fetch(`/api/patients/${currentPatientId}/medication`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ medication_name: name, taken })
+              }).then(() => {
+                addChatMessage(`✅ Logged: ${name} ${taken ? 'taken' : 'missed'}`, 'agent');
+                loadRecentLogs();
+              });
+            }
+          }
+        });
+    }
+    
+    function quickLogMeal() {
+      const mealType = prompt('Meal type:\n1. Breakfast\n2. Lunch\n3. Dinner\n4. Snack\n\nEnter number (1-4):', '3');
+      const typeMap = { '1': 'breakfast', '2': 'lunch', '3': 'dinner', '4': 'snack' };
+      const meal = typeMap[mealType] || 'dinner';
+      
+      const description = prompt('What did you eat?');
+      if (description && currentPatientId) {
+        const carbs = prompt('Carbs (grams) - optional (press Cancel to skip):');
+        
+        fetch(`/api/patients/${currentPatientId}/meal`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            meal_type: meal,
+            description: description,
+            carbs_estimate: carbs ? parseFloat(carbs) : null
+          })
+        }).then(() => {
+          addChatMessage(`✅ Logged ${meal}: ${description}`, 'agent');
+          loadRecentLogs();
+        }).catch(() => {
+          addToOfflineQueue('meal', { meal_type: meal, description, carbs_estimate: carbs ? parseFloat(carbs) : null });
+          addChatMessage(`📝 Meal logged (will sync when online)`, 'agent');
+        });
+      }
+    }
+    
+    function quickLogActivity() {
+      const activity = prompt('Activity type (e.g., Walking, Running, Yoga):');
+      if (activity && currentPatientId) {
+        const duration = prompt('Duration (minutes):');
+        if (duration && !isNaN(duration)) {
+          const intensity = prompt('Intensity:\n1. Light\n2. Moderate\n3. Vigorous\n\nEnter number (1-3):', '2');
+          const intensityMap = { '1': 'light', '2': 'moderate', '3': 'vigorous' };
+          
+          fetch(`/api/patients/${currentPatientId}/activity`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              activity_type: activity,
+              duration_minutes: parseInt(duration),
+              intensity: intensityMap[intensity] || 'moderate'
+            })
+          }).then(() => {
+            addChatMessage(`✅ Logged activity: ${activity} for ${duration} minutes`, 'agent');
+            loadRecentLogs();
+            loadHealthMetrics();
+          }).catch(() => {
+            addToOfflineQueue('activity', { activity_type: activity, duration_minutes: parseInt(duration), intensity: intensityMap[intensity] || 'moderate' });
+            addChatMessage(`📝 Activity logged (will sync when online)`, 'agent');
+          });
+        }
+      }
+    }
+    
+    // Voice input (basic implementation)
+    let isRecording = false;
+    document.getElementById('voice-input-btn').addEventListener('click', () => {
+      if (!isRecording) {
+        // Start voice input
+        isRecording = true;
+        document.getElementById('voice-input-btn').classList.add('recording');
+        document.getElementById('voice-input-btn').innerHTML = '<i class="fas fa-stop"></i>';
+        
+        // In a real implementation, this would use Web Speech API
+        alert('Voice input: In a full implementation, this would use your device microphone. For now, you can type your message.');
+        
+        // Simulate voice input after 2 seconds
+        setTimeout(() => {
+          isRecording = false;
+          document.getElementById('voice-input-btn').classList.remove('recording');
+          document.getElementById('voice-input-btn').innerHTML = '<i class="fas fa-microphone"></i>';
+        }, 2000);
+      } else {
+        // Stop recording
+        isRecording = false;
+        document.getElementById('voice-input-btn').classList.remove('recording');
+        document.getElementById('voice-input-btn').innerHTML = '<i class="fas fa-microphone"></i>';
+      }
+    });
+
+    document.getElementById('chat-send-btn').addEventListener('click', sendChatMessage);
+    document.getElementById('chat-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') sendChatMessage();
+    });
+
+    async function sendChatMessage() {
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim();
+      if (!text) return;
+      
+      const sendBtn = document.getElementById('chat-send-btn');
+      sendBtn.disabled = true;
+      sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+      
+      input.value = '';
+      addChatMessage(text, 'user');
+      showTypingIndicator();
 
       try {
         const res = await fetch('/api/diabuddies', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          body: JSON.stringify({
+            sessionId: chatSessionId,
+            message: text,
+            generateInsights: false,
+            patient_id: currentPatientId,
+            specialist: currentSpecialist || 'general'
+          })
         });
         const data = await res.json();
-        addMessage(data.reply, 'agent');
         
-        // Only show insights in minimized panel if emergency or if insights were generated
-        if (data.is_emergency || data.extracted || data.risk || data.summary) {
-          updateInsightsDisplay({
-            extracted: data.extracted,
-            risk: data.risk,
-            summary: data.summary
-          }, data.is_emergency);
-        }
-        
-        statusEl.textContent = 'In check-in…';
+        // Simulate typing delay for better UX
+        setTimeout(() => {
+          hideTypingIndicator();
+          addChatMessage(data.reply, 'agent');
+          sendBtn.disabled = false;
+          sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+        }, 500);
       } catch (err) {
-        console.error(err);
-        addMessage("Oops, something went wrong.", "agent");
-        statusEl.textContent = 'Error';
+        hideTypingIndicator();
+        addChatMessage("Sorry, I'm having trouble right now. Please try again in a moment.", 'agent');
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
       }
     }
 
-    callBtn.addEventListener('click', startCall);
-    sendBtn.addEventListener('click', sendMessage);
-    inputEl.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') sendMessage();
+    // ==================== COMMUNITY ====================
+    document.getElementById('create-post-btn').addEventListener('click', () => {
+      const content = prompt('What would you like to share?');
+      if (content && content.trim()) {
+        createPost(content);
+      }
+    });
+
+    async function createPost(content) {
+      try {
+        const res = await fetch('/api/community/posts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            patient_id: currentPatientId,
+            content: content.trim()
+          })
+        });
+        if (res.ok) {
+          loadCommunityPosts();
+        }
+      } catch (err) {
+        alert('Error creating post');
+      }
+    }
+
+    async function loadCommunityPosts() {
+      try {
+        // Load image data from localStorage if available
+        if (!window.samplePostImages) {
+          try {
+            const stored = localStorage.getItem('samplePostImages');
+            if (stored) {
+              window.samplePostImages = JSON.parse(stored);
+            } else {
+              window.samplePostImages = {};
+            }
+          } catch (e) {
+            window.samplePostImages = {};
+          }
+        }
+        
+        const res = await fetch('/api/community/posts');
+        const posts = await res.json();
+        const container = document.getElementById('community-posts');
+        container.innerHTML = '';
+
+        if (posts.length === 0) {
+          container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👥</div><p>No posts yet. Be the first to share!</p></div>';
+          return;
+        }
+
+        posts.forEach(post => {
+          const div = document.createElement('div');
+          div.className = 'post-card';
+          const date = new Date(post.created_at).toLocaleString();
+          const initials = (post.author_name || 'A').charAt(0).toUpperCase();
+          
+          // Check if this post has an image (from sample data stored in window object)
+          let imageData = null;
+          if (window.samplePostImages && window.samplePostImages[post.post_id]) {
+            imageData = window.samplePostImages[post.post_id];
+          } else if (post.image_url) {
+            imageData = {
+              image_url: post.image_url,
+              image_caption: post.image_caption
+            };
+          }
+          
+          div.innerHTML = `
+            <div class="post-header">
+              <div class="post-header-content">
+                <div class="post-avatar">${initials}</div>
+                <div style="flex: 1;">
+                  <div class="post-author">${post.author_name || 'Anonymous'}</div>
+                  <div class="post-time">${date}</div>
+                </div>
+              </div>
+            </div>
+            <div class="post-content">${post.content}</div>
+            ${imageData && imageData.image_url ? `
+              <div class="post-image-container" onclick="window.open('${imageData.image_url}', '_blank')">
+                <img src="${imageData.image_url}" alt="Post image" class="post-image" />
+                ${imageData.image_caption ? `<div class="image-caption">${imageData.image_caption}</div>` : ''}
+              </div>
+            ` : ''}
+            <div class="post-actions">
+              <span class="post-action" onclick="likePost('${post.post_id}')">
+                <i class="fas fa-heart"></i> Like (${post.likes || 0})
+              </span>
+              <span class="post-action" onclick="toggleComments('${post.post_id}')">
+                <i class="fas fa-comment"></i> Comments (${post.comment_count || 0})
+              </span>
+            </div>
+            <div class="comment-section" id="comments-${post.post_id}" style="display: none;">
+              <div id="comments-list-${post.post_id}"></div>
+              <div class="comment-input">
+                <input type="text" id="comment-input-${post.post_id}" placeholder="Write a comment..." />
+                <button class="btn btn-primary" onclick="addComment('${post.post_id}')">
+                  <i class="fas fa-paper-plane"></i>
+                </button>
+              </div>
+            </div>
+          `;
+          container.appendChild(div);
+          loadComments(post.post_id);
+        });
+      } catch (err) {
+        console.error('Error loading posts:', err);
+      }
+    }
+
+    window.likePost = async function(postId) {
+      try {
+        await fetch(`/api/community/posts/${postId}/like`, { method: 'POST' });
+        loadCommunityPosts();
+      } catch (err) {
+        console.error('Error liking post');
+      }
+    };
+
+    window.toggleComments = function(postId) {
+      const section = document.getElementById(`comments-${postId}`);
+      section.style.display = section.style.display === 'none' ? 'block' : 'none';
+    };
+
+    window.addComment = async function(postId) {
+      const input = document.getElementById(`comment-input-${postId}`);
+      const content = input.value.trim();
+      if (!content) return;
+
+      try {
+        const res = await fetch(`/api/community/posts/${postId}/comments`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            patient_id: currentPatientId,
+            content
+          })
+        });
+        if (res.ok) {
+          input.value = '';
+          loadComments(postId);
+          loadCommunityPosts();
+        }
+      } catch (err) {
+        alert('Error adding comment');
+      }
+    };
+
+    async function loadComments(postId) {
+      try {
+        const res = await fetch(`/api/community/posts/${postId}/comments`);
+        const comments = await res.json();
+        const container = document.getElementById(`comments-list-${postId}`);
+        container.innerHTML = '';
+
+        comments.forEach(comment => {
+          const div = document.createElement('div');
+          div.className = 'comment';
+          const date = new Date(comment.created_at).toLocaleString();
+          div.innerHTML = `<span class="comment-author">${comment.author_name || 'Anonymous'}</span>${comment.content}<br><small>${date}</small>`;
+          container.appendChild(div);
+        });
+      } catch (err) {
+        console.error('Error loading comments:', err);
+      }
+    }
+
+    // ==================== DOCTOR COMMUNICATION ====================
+    document.getElementById('doctor-message-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentPatientId) return;
+      const text = document.getElementById('doctor-message-text').value;
+
+      try {
+        const res = await fetch(`/api/patients/${currentPatientId}/messages`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: text,
+            from_patient: true
+          })
+        });
+        if (res.ok) {
+          document.getElementById('doctor-message-text').value = '';
+          loadDoctorMessages();
+        }
+      } catch (err) {
+        alert('Error sending message');
+      }
+    });
+
+    async function loadDoctorMessages() {
+      if (!currentPatientId) return;
+      try {
+        const res = await fetch(`/api/patients/${currentPatientId}/messages`);
+        const messages = await res.json();
+        const container = document.getElementById('doctor-messages-container');
+        container.innerHTML = '';
+
+        if (messages.length === 0) {
+          container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👨‍⚕️</div><p>No messages yet. Send a message to your doctor!</p></div>';
+          return;
+        }
+
+        messages.forEach(msg => {
+          const div = document.createElement('div');
+          div.className = `message-thread ${msg.from_patient ? '' : 'from-doctor'}`;
+          const date = new Date(msg.timestamp).toLocaleString();
+          const isDoctor = !msg.from_patient;
+          const name = msg.from_patient ? 'You' : 'Dr. ' + (msg.doctor_name || 'Your Doctor');
+          const initials = isDoctor ? '👨‍⚕️' : '👤';
+          div.innerHTML = `
+            <div class="message-thread-header">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                ${isDoctor ? '<div class="doctor-avatar">👨‍⚕️</div>' : ''}
+                <span>${name}</span>
+              </div>
+              <span>${date}</span>
+            </div>
+            <div class="message-thread-content">${msg.message}</div>
+          `;
+          container.appendChild(div);
+        });
+      } catch (err) {
+        console.error('Error loading messages:', err);
+      }
+    }
+
+    // Health Dashboard Functions
+    function updateCurrentDate() {
+      const now = new Date();
+      const options = { weekday: 'long', month: 'long', day: 'numeric' };
+      document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', options);
+    }
+    
+    function generateHeartRateChart() {
+      const chart = document.getElementById('heart-rate-chart');
+      chart.innerHTML = '';
+      // Generate random bars for demo
+      for (let i = 0; i < 12; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        const height = Math.random() * 60 + 20; // 20-80% height
+        bar.style.height = height + '%';
+        chart.appendChild(bar);
+      }
+    }
+    
+    function generateStepsChart() {
+      const chart = document.getElementById('steps-chart');
+      chart.innerHTML = `
+        <svg viewBox="0 0 100 40" preserveAspectRatio="none">
+          <polyline
+            points="0,35 10,30 20,25 30,20 40,18 50,15 60,12 70,10 80,8 90,5 100,3"
+            fill="none"
+            stroke="rgba(0,0,0,0.2)"
+            stroke-width="2"
+            vector-effect="non-scaling-stroke"
+          />
+        </svg>
+      `;
+    }
+    
+    function generateSleepChart() {
+      const chart = document.getElementById('sleep-chart');
+      chart.innerHTML = '';
+      const hours = ['6am', '7am', '8am', '9am', '10am', '11am', '12pm', '1pm', '2pm'];
+      const sleepData = [0, 0, 0, 0, 1, 0.8, 0.6, 0.3, 0]; // Sleep intensity
+      
+      hours.forEach((hour, i) => {
+        const container = document.createElement('div');
+        container.style.flex = '1';
+        
+        const bar = document.createElement('div');
+        bar.className = 'sleep-bar' + (sleepData[i] > 0 ? ' filled' : '');
+        bar.style.height = (sleepData[i] * 100) + '%';
+        if (sleepData[i] > 0) {
+          bar.style.opacity = sleepData[i];
+        }
+        
+        const label = document.createElement('div');
+        label.className = 'sleep-label';
+        label.textContent = hour;
+        
+        container.appendChild(bar);
+        container.appendChild(label);
+        chart.appendChild(container);
+      });
+    }
+    
+    async function loadHealthMetrics() {
+      if (!currentPatientId) return;
+      
+      try {
+        // Load activity logs to calculate steps
+        const res = await fetch(`/api/patients/${currentPatientId}/logs?days=1`);
+        const data = await res.json();
+        
+        // Calculate steps from activity (rough estimate: 100 steps per minute of activity)
+        let totalSteps = 0;
+        data.activity.forEach(activity => {
+          totalSteps += activity.duration_minutes * 100;
+        });
+        
+        // Update steps if we have activity data, otherwise keep default
+        if (totalSteps > 0) {
+          document.getElementById('steps-value').textContent = totalSteps.toLocaleString();
+        }
+        
+        // Calculate sleep (mock for now - would integrate with health app)
+        // In real app, this would come from Apple HealthKit or Google Fit
+        
+        // Generate charts
+        generateHeartRateChart();
+        generateStepsChart();
+        generateSleepChart();
+        
+      } catch (err) {
+        console.error('Error loading health metrics:', err);
+        // Still generate charts with default data
+        generateHeartRateChart();
+        generateStepsChart();
+        generateSleepChart();
+      }
+    }
+    
+    function showHydrationTip() {
+      alert('💧 Hydration Tip: Aim to drink 8-10 glasses of water daily. Set reminders throughout the day!');
+    }
+    
+    function showActivityTip() {
+      alert('🏃 Activity Tip: Try to get at least 30 minutes of moderate activity daily. Even a short walk helps!');
+    }
+    
+    // ==================== OFFLINE DATA QUEUE ====================
+    function addToOfflineQueue(type, data) {
+      const queue = JSON.parse(localStorage.getItem('offlineQueue') || '[]');
+      queue.push({
+        type,
+        data,
+        timestamp: new Date().toISOString()
+      });
+      localStorage.setItem('offlineQueue', JSON.stringify(queue));
+    }
+    
+    function removeFromOfflineQueue(type, data) {
+      const queue = JSON.parse(localStorage.getItem('offlineQueue') || '[]');
+      const filtered = queue.filter(item => 
+        !(item.type === type && JSON.stringify(item.data) === JSON.stringify(data))
+      );
+      localStorage.setItem('offlineQueue', JSON.stringify(filtered));
+    }
+    
+    async function syncOfflineQueue() {
+      const queue = JSON.parse(localStorage.getItem('offlineQueue') || '[]');
+      if (queue.length === 0) return;
+      
+      for (const item of queue) {
+        try {
+          let endpoint = '';
+          let body = {};
+          
+          if (item.type === 'glucose') {
+            endpoint = `/api/patients/${currentPatientId}/glucose`;
+            body = item.data;
+          } else if (item.type === 'medication') {
+            endpoint = `/api/patients/${currentPatientId}/medication`;
+            body = item.data;
+          } else if (item.type === 'meal') {
+            endpoint = `/api/patients/${currentPatientId}/meal`;
+            body = item.data;
+          } else if (item.type === 'activity') {
+            endpoint = `/api/patients/${currentPatientId}/activity`;
+            body = item.data;
+          }
+          
+          const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+          
+          if (res.ok) {
+            removeFromOfflineQueue(item.type, item.data);
+          }
+        } catch (err) {
+          console.log('Still offline, keeping in queue');
+        }
+      }
+      
+      // Update UI to show sync status
+      updateSyncStatus();
+    }
+    
+    function updateSyncStatus() {
+      const queue = JSON.parse(localStorage.getItem('offlineQueue') || '[]');
+      const statusEl = document.getElementById('sync-status');
+      if (statusEl) {
+        if (queue.length > 0) {
+          statusEl.textContent = `${queue.length} items pending sync`;
+          statusEl.style.color = 'var(--pastel-orange)';
+        } else {
+          statusEl.textContent = 'All synced';
+          statusEl.style.color = 'var(--pastel-green)';
+        }
+      }
+    }
+    
+    // Sync queue periodically when online
+    setInterval(() => {
+      if (navigator.onLine) {
+        syncOfflineQueue();
+      }
+    }, 30000); // Every 30 seconds
+    
+    // Sync when coming back online
+    window.addEventListener('online', () => {
+      syncOfflineQueue();
+      loadRecentLogs();
+    });
+
+    // ==================== LOCAL CARB GUIDE ====================
+    const localCarbGuide = {
+      'Biscuits': { carbs: 30, serving: '1 biscuit (2.5")' },
+      'Grits': { carbs: 28, serving: '1 cup cooked' },
+      'Cornbread': { carbs: 25, serving: '1 piece (2"x2")' },
+      'Fried Chicken': { carbs: 15, serving: '1 piece (thigh)' },
+      'Mac and Cheese': { carbs: 45, serving: '1 cup' },
+      'Collard Greens': { carbs: 5, serving: '1 cup cooked' },
+      'Black-eyed Peas': { carbs: 20, serving: '1/2 cup' },
+      'Sweet Potato': { carbs: 27, serving: '1 medium (5" long)' },
+      'Pecan Pie': { carbs: 50, serving: '1 slice (1/8 pie)' },
+      'Peach Cobbler': { carbs: 45, serving: '1/2 cup' },
+      'Fried Okra': { carbs: 18, serving: '1/2 cup' },
+      'Hush Puppies': { carbs: 20, serving: '2 pieces' },
+      'Pulled Pork': { carbs: 0, serving: '3 oz (no sauce)' },
+      'BBQ Sauce': { carbs: 12, serving: '2 tbsp' },
+      'Sweet Tea': { carbs: 22, serving: '8 oz' }
+    };
+    
+    function showCarbGuide() {
+      const modal = document.createElement('div');
+      modal.className = 'modal';
+      modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center;';
+      
+      modal.innerHTML = `
+        <div style="background: white; border-radius: 16px; padding: 24px; max-width: 90%; width: 400px; max-height: 80vh; overflow-y: auto;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="margin: 0; color: var(--text-primary);">🍽️ Local Carb Guide</h2>
+            <button onclick="this.closest('.modal').remove()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+          </div>
+          <div style="display: grid; gap: 12px;">
+            ${Object.entries(localCarbGuide).map(([food, info]) => `
+              <div style="padding: 12px; background: var(--bg-light); border-radius: 8px;">
+                <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">${food}</div>
+                <div style="font-size: 13px; color: var(--text-secondary);">
+                  ${info.carbs}g carbs • ${info.serving}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+      
+      modal.onclick = (e) => {
+        if (e.target === modal) modal.remove();
+      };
+      
+      document.body.appendChild(modal);
+    }
+
+    // ==================== EMERGENCY CONTACTS ====================
+    function loadEmergencyContacts() {
+      return JSON.parse(localStorage.getItem('emergencyContacts') || '[]');
+    }
+    
+    function saveEmergencyContacts(contacts) {
+      localStorage.setItem('emergencyContacts', JSON.stringify(contacts));
+    }
+    
+    function showEmergencyContacts() {
+      const contacts = loadEmergencyContacts();
+      const modal = document.createElement('div');
+      modal.className = 'modal';
+      modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center;';
+      
+      modal.innerHTML = `
+        <div style="background: white; border-radius: 16px; padding: 24px; max-width: 90%; width: 400px; max-height: 80vh; overflow-y: auto;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="margin: 0; color: var(--text-primary);">🚨 Emergency Contacts</h2>
+            <button onclick="this.closest('.modal').remove()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+          </div>
+          <div id="emergency-contacts-list" style="margin-bottom: 16px;">
+            ${contacts.length === 0 ? '<p style="color: var(--text-secondary); text-align: center; padding: 20px;">No emergency contacts saved</p>' : 
+              contacts.map((c, i) => `
+                <div style="padding: 12px; background: var(--bg-light); border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <div style="font-weight: 600; color: var(--text-primary);">${c.name}</div>
+                    <div style="font-size: 13px; color: var(--text-secondary);">${c.phone}</div>
+                  </div>
+                  <a href="tel:${c.phone}" style="padding: 8px 16px; background: var(--pastel-blue); color: white; border-radius: 6px; text-decoration: none; font-size: 14px;">Call</a>
+                </div>
+              `).join('')}
+          </div>
+          <form id="add-emergency-contact" style="display: grid; gap: 12px;">
+            <input type="text" id="contact-name" placeholder="Contact Name" required style="padding: 10px; border: 1.5px solid #E8ECEF; border-radius: 8px;">
+            <input type="tel" id="contact-phone" placeholder="Phone Number" required style="padding: 10px; border: 1.5px solid #E8ECEF; border-radius: 8px;">
+            <button type="submit" style="padding: 12px; background: var(--pastel-blue); color: white; border: none; border-radius: 8px; font-weight: 600;">Add Contact</button>
+          </form>
+        </div>
+      `;
+      
+      modal.onclick = (e) => {
+        if (e.target === modal) modal.remove();
+      };
+      
+      document.getElementById('add-emergency-contact').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('contact-name').value;
+        const phone = document.getElementById('contact-phone').value;
+        const contacts = loadEmergencyContacts();
+        contacts.push({ name, phone });
+        saveEmergencyContacts(contacts);
+        modal.remove();
+        showEmergencyContacts(); // Refresh
+      });
+      
+      document.body.appendChild(modal);
+    }
+
+    // ==================== SETTINGS DROPDOWN ====================
+    function toggleSettingsDropdown() {
+      const dropdown = document.getElementById('settings-dropdown');
+      const button = document.getElementById('profile-button');
+      
+      if (dropdown.classList.contains('show')) {
+        dropdown.classList.remove('show');
+        button.classList.remove('active');
+      } else {
+        dropdown.classList.add('show');
+        button.classList.add('active');
+        loadSettingsState();
+      }
+    }
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      const dropdown = document.getElementById('settings-dropdown');
+      const button = document.getElementById('profile-button');
+      
+      if (!dropdown.contains(e.target) && !button.contains(e.target)) {
+        dropdown.classList.remove('show');
+        button.classList.remove('active');
+      }
+    });
+    
+    function loadSettingsState() {
+      // Load settings from localStorage
+      const settings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+      
+      // Set toggle states
+      setToggleState('smsReminders', settings.smsReminders !== false);
+      setToggleState('medicationReminders', settings.medicationReminders !== false);
+      setToggleState('glucoseReminders', settings.glucoseReminders !== false);
+      setToggleState('darkMode', settings.darkMode === true);
+      setToggleState('doctorReporting', settings.doctorReporting !== false);
+    }
+    
+    function setToggleState(setting, enabled) {
+      const toggle = document.getElementById(`toggle-${setting}`);
+      if (toggle) {
+        if (enabled) {
+          toggle.classList.add('active');
+        } else {
+          toggle.classList.remove('active');
+        }
+      }
+    }
+    
+    function toggleSetting(setting) {
+      const settings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+      const currentState = settings[setting] !== false; // Default to true
+      settings[setting] = !currentState;
+      localStorage.setItem('userSettings', JSON.stringify(settings));
+      
+      setToggleState(setting, !currentState);
+      
+      // Handle special cases
+      if (setting === 'darkMode') {
+        toggleDarkMode(!currentState);
+      } else if (setting === 'doctorReporting') {
+        updateDoctorReporting(!currentState);
+      } else if (setting === 'smsReminders' || setting === 'medicationReminders' || setting === 'glucoseReminders') {
+        updateReminderSettings(settings);
+      }
+    }
+    
+    function toggleDarkMode(enabled) {
+      if (enabled) {
+        document.body.classList.add('dark-mode');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.body.classList.remove('dark-mode');
+        localStorage.setItem('theme', 'light');
+      }
+    }
+    
+    function updateDoctorReporting(enabled) {
+      // Update patient's doctor reporting preference
+      if (currentPatientId) {
+        fetch(`/api/patients/${currentPatientId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ doctor_reporting_enabled: enabled })
+        }).catch(err => console.error('Error updating doctor reporting:', err));
+      }
+    }
+    
+    function updateReminderSettings(settings) {
+      // Update patient's reminder preferences
+      if (currentPatientId) {
+        fetch(`/api/patients/${currentPatientId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sms_enabled: settings.smsReminders !== false,
+            sms_medication_reminders: settings.medicationReminders !== false,
+            sms_glucose_reminders: settings.glucoseReminders !== false
+          })
+        }).catch(err => console.error('Error updating reminder settings:', err));
+      }
+    }
+    
+    function showProfileInfo() {
+      toggleSettingsDropdown(); // Close dropdown first
+      
+      const modal = document.createElement('div');
+      modal.className = 'modal';
+      modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center;';
+      
+      modal.innerHTML = `
+        <div style="background: white; border-radius: 16px; padding: 24px; max-width: 90%; width: 400px; max-height: 80vh; overflow-y: auto;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="margin: 0; color: var(--text-primary);">👤 Profile Information</h2>
+            <button onclick="this.closest('.modal').remove()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-secondary);">&times;</button>
+          </div>
+          <div style="display: grid; gap: 16px;">
+            <div>
+              <label style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; display: block;">Name</label>
+              <div style="padding: 12px; background: var(--bg-light); border-radius: 8px; font-size: 14px; color: var(--text-primary);">John</div>
+            </div>
+            <div>
+              <label style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; display: block;">Email</label>
+              <div style="padding: 12px; background: var(--bg-light); border-radius: 8px; font-size: 14px; color: var(--text-primary);">abhya@example.com</div>
+            </div>
+            <div>
+              <label style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; display: block;">Phone</label>
+              <div style="padding: 12px; background: var(--bg-light); border-radius: 8px; font-size: 14px; color: var(--text-primary);">+1234567890</div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      modal.onclick = (e) => {
+        if (e.target === modal) modal.remove();
+      };
+      
+      document.body.appendChild(modal);
+    }
+    
+    function callEmergency(type) {
+      toggleSettingsDropdown(); // Close dropdown first
+      
+      let phoneNumber, title, message;
+      
+      if (type === '911') {
+        phoneNumber = '911';
+        title = 'Call 911';
+        message = 'Are you sure you want to call Emergency Services (911)?';
+      } else if (type === 'poison') {
+        phoneNumber = '18002221222';
+        title = 'Call Poison Control';
+        message = 'Call Poison Control at 1-800-222-1222?';
+      } else if (type === 'hospital') {
+        const savedHospital = localStorage.getItem('emergencyHospital');
+        if (savedHospital) {
+          phoneNumber = savedHospital.replace(/\D/g, '');
+          message = `Call your local hospital at ${savedHospital}?`;
+        } else {
+          const hospitalNumber = prompt('Enter your local hospital phone number (e.g., 404-555-1234):');
+          if (hospitalNumber) {
+            localStorage.setItem('emergencyHospital', hospitalNumber);
+            document.getElementById('hospital-number').textContent = hospitalNumber;
+            phoneNumber = hospitalNumber.replace(/\D/g, '');
+            message = `Call your local hospital at ${hospitalNumber}?`;
+          } else {
+            return;
+          }
+        }
+      } else if (type === 'doctor') {
+        const savedDoctor = localStorage.getItem('emergencyDoctor');
+        if (savedDoctor) {
+          phoneNumber = savedDoctor.replace(/\D/g, '');
+          message = `Call your doctor at ${savedDoctor}?`;
+        } else {
+          const doctorNumber = prompt('Enter your doctor\'s phone number (e.g., 404-555-5678):');
+          if (doctorNumber) {
+            localStorage.setItem('emergencyDoctor', doctorNumber);
+            document.getElementById('doctor-number').textContent = doctorNumber;
+            phoneNumber = doctorNumber.replace(/\D/g, '');
+            message = `Call your doctor at ${doctorNumber}?`;
+          } else {
+            return;
+          }
+        }
+      }
+      
+      if (phoneNumber && confirm(message)) {
+        window.location.href = `tel:${phoneNumber}`;
+      }
+    }
+    
+    function loadEmergencyNumbers() {
+      const hospital = localStorage.getItem('emergencyHospital');
+      const doctor = localStorage.getItem('emergencyDoctor');
+      
+      if (hospital) {
+        const hospitalEl = document.getElementById('hospital-number');
+        if (hospitalEl) hospitalEl.textContent = hospital;
+      }
+      
+      if (doctor) {
+        const doctorEl = document.getElementById('doctor-number');
+        if (doctorEl) doctorEl.textContent = doctor;
+      }
+    }
+    
+    function logout() {
+      if (confirm('Are you sure you want to log out?')) {
+        localStorage.removeItem('patientId');
+        localStorage.removeItem('userSettings');
+        window.location.reload();
+      }
+    }
+    
+    // Load theme on page load
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      toggleDarkMode(true);
+    }
+
+    // Initialize
+    initPatient().then(() => {
+      updateCurrentDate();
+      loadHealthMetrics();
+      loadRecentLogs();
+      syncOfflineQueue(); // Try to sync any queued data
+      loadSettingsState(); // Load settings
+      loadEmergencyNumbers(); // Load saved emergency numbers
     });
   </script>
 </body>

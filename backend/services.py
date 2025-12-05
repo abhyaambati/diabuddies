@@ -6,6 +6,12 @@ from models import (
     Alert, Reminder, GlucoseLog, MedicationLog, CarePlan, Medication
 )
 from storage import storage
+try:
+    from sms_service import sms_service
+    SMS_AVAILABLE = True
+except ImportError:
+    SMS_AVAILABLE = False
+    sms_service = None
 
 
 def check_missed_doses(patient_id: str) -> List[Alert]:
@@ -102,11 +108,22 @@ def check_glucose_alerts(patient_id: str, reading: float, reading_type: str) -> 
         )
         storage.create_alert(alert)
         
-        # If critical, notify doctor immediately
+        # If critical, notify doctor immediately and send SMS
         if severity == 'critical':
             alert.doctor_notified = True
-            # In production, this would send email/SMS to doctor
             storage.save()
+            
+            # Send SMS alert to patient and emergency contact
+            if SMS_AVAILABLE and sms_service and sms_service.available:
+                patient = storage.get_patient(patient_id)
+                if patient and patient.phone:
+                    emergency_contact = patient.emergency_contact_phone if hasattr(patient, 'emergency_contact_phone') else None
+                    sms_service.send_critical_alert(
+                        patient.phone,
+                        emergency_contact,
+                        reading,
+                        reading_type
+                    )
         
         return alert
     
@@ -151,8 +168,61 @@ def generate_reminders(patient_id: str) -> List[Reminder]:
                     )
                     storage.create_reminder(reminder)
                     reminders.append(reminder)
+                    
+                    # Send SMS reminder if enabled
+                    if SMS_AVAILABLE and sms_service and sms_service.available:
+                        patient = storage.get_patient(patient_id)
+                        if patient and patient.phone and (hasattr(patient, 'sms_medication_reminders') and patient.sms_medication_reminders or not hasattr(patient, 'sms_medication_reminders')):
+                            sms_service.send_medication_reminder(
+                                patient.phone,
+                                med.name,
+                                med.dosage,
+                                med_time
+                            )
     
     return reminders
+
+
+def calculate_time_in_range(patient_id: str, days: int = 7) -> Dict:
+    """Calculate Time In Range (TIR) - percentage of readings within target range."""
+    care_plan = storage.get_care_plan(patient_id)
+    if not care_plan:
+        return {'tir_percentage': None, 'total_readings': 0, 'in_range': 0}
+    
+    glucose_logs = storage.get_glucose_logs(patient_id, days=days)
+    targets = care_plan.glucose_targets
+    
+    if not glucose_logs:
+        return {'tir_percentage': None, 'total_readings': 0, 'in_range': 0}
+    
+    in_range_count = 0
+    total_readings = len(glucose_logs)
+    
+    for log in glucose_logs:
+        reading = log.reading
+        reading_type = log.reading_type
+        
+        # Determine target range based on reading type
+        if reading_type == 'fasting':
+            min_target = targets.fasting_min
+            max_target = targets.fasting_max
+        else:  # post_meal, random, bedtime
+            min_target = targets.post_meal_min
+            max_target = targets.post_meal_max
+        
+        # Check if reading is in range
+        if min_target <= reading <= max_target:
+            in_range_count += 1
+    
+    tir_percentage = (in_range_count / total_readings * 100) if total_readings > 0 else 0
+    
+    return {
+        'tir_percentage': round(tir_percentage, 1),
+        'total_readings': total_readings,
+        'in_range': in_range_count,
+        'below_range': len([log for log in glucose_logs if log.reading < (targets.fasting_min if log.reading_type == 'fasting' else targets.post_meal_min)]),
+        'above_range': len([log for log in glucose_logs if log.reading > (targets.fasting_max if log.reading_type == 'fasting' else targets.post_meal_max)])
+    }
 
 
 def generate_weekly_report(patient_id: str) -> Dict:
@@ -178,6 +248,9 @@ def generate_weekly_report(patient_id: str) -> Dict:
     glucose_readings = [log.reading for log in glucose_logs]
     avg_glucose = sum(glucose_readings) / len(glucose_readings) if glucose_readings else None
     
+    # Calculate Time In Range (TIR)
+    tir_data = calculate_time_in_range(patient_id, days=7)
+    
     # Medication adherence
     total_doses = len([m for m in care_plan.medications for _ in m.times]) * 7
     taken_doses = len([log for log in medication_logs if log.taken])
@@ -199,7 +272,8 @@ def generate_weekly_report(patient_id: str) -> Dict:
         'glucose': {
             'average': avg_glucose,
             'readings_count': len(glucose_readings),
-            'readings': [log.to_dict() for log in glucose_logs[-10:]]  # Last 10
+            'readings': [log.to_dict() for log in glucose_logs[-10:]],  # Last 10
+            'time_in_range': tir_data
         },
         'medication_adherence': {
             'rate': round(adherence_rate, 1),
@@ -240,6 +314,9 @@ def generate_monthly_report(patient_id: str) -> Dict:
     glucose_readings = [log.reading for log in glucose_logs]
     avg_glucose = sum(glucose_readings) / len(glucose_readings) if glucose_readings else None
     
+    # Calculate Time In Range (TIR)
+    tir_data = calculate_time_in_range(patient_id, days=30)
+    
     # Medication adherence
     total_doses = len([m for m in care_plan.medications for _ in m.times]) * 30
     taken_doses = len([log for log in medication_logs if log.taken])
@@ -249,9 +326,49 @@ def generate_monthly_report(patient_id: str) -> Dict:
     total_activity_minutes = sum(log.duration_minutes for log in activity_logs)
     avg_per_week = total_activity_minutes / 4.3  # Approximate weeks in month
     
-    # Patterns
+    # Enhanced Pattern Detection
     high_glucose_days = len(set(log.timestamp[:10] for log in glucose_logs if log.reading > care_plan.glucose_targets.post_meal_max))
     low_glucose_days = len(set(log.timestamp[:10] for log in glucose_logs if log.reading < care_plan.glucose_targets.post_meal_min))
+    
+    # Time-of-day patterns
+    patterns = {
+        'morning_spikes': 0,  # Dawn phenomenon
+        'evening_spikes': 0,   # Post-dinner
+        'nighttime_lows': 0,    # Nocturnal hypoglycemia
+        'post_meal_spikes': 0
+    }
+    
+    if glucose_logs:
+        for log in glucose_logs:
+            hour = datetime.fromisoformat(log.timestamp).hour
+            reading = log.reading
+            
+            # Morning (6-12): Check for dawn phenomenon
+            if 6 <= hour < 12 and reading > care_plan.glucose_targets.fasting_max:
+                patterns['morning_spikes'] += 1
+            
+            # Evening (17-22): Check for post-dinner spikes
+            if 17 <= hour < 22 and reading > care_plan.glucose_targets.post_meal_max:
+                patterns['evening_spikes'] += 1
+            
+            # Nighttime (22-6): Check for lows
+            if (hour >= 22 or hour < 6) and reading < care_plan.glucose_targets.fasting_min:
+                patterns['nighttime_lows'] += 1
+            
+            # Post-meal spikes (any time after meal logging)
+            if log.reading_type == 'post_meal' and reading > care_plan.glucose_targets.post_meal_max:
+                patterns['post_meal_spikes'] += 1
+    
+    # Pattern summary
+    pattern_summary = []
+    if patterns['morning_spikes'] > len(glucose_logs) * 0.3:  # >30% of readings
+        pattern_summary.append(f"Consistent morning glucose spikes detected ({patterns['morning_spikes']} occurrences) - possible dawn phenomenon")
+    if patterns['evening_spikes'] > len(glucose_logs) * 0.3:
+        pattern_summary.append(f"Consistent evening glucose spikes ({patterns['evening_spikes']} occurrences) - review dinner timing and carb intake")
+    if patterns['nighttime_lows'] > len(glucose_logs) * 0.2:  # >20% of readings
+        pattern_summary.append(f"Nighttime hypoglycemia detected ({patterns['nighttime_lows']} occurrences) - consider adjusting evening medication")
+    if patterns['post_meal_spikes'] > len(glucose_logs) * 0.4:
+        pattern_summary.append(f"Frequent post-meal spikes ({patterns['post_meal_spikes']} occurrences) - review meal composition and timing")
     
     return {
         'patient_id': patient_id,
@@ -263,7 +380,10 @@ def generate_monthly_report(patient_id: str) -> Dict:
             'average': avg_glucose,
             'readings_count': len(glucose_readings),
             'high_days': high_glucose_days,
-            'low_days': low_glucose_days
+            'low_days': low_glucose_days,
+            'time_in_range': tir_data,
+            'patterns': patterns,
+            'pattern_summary': pattern_summary
         },
         'medication_adherence': {
             'rate': round(adherence_rate, 1),
@@ -279,6 +399,6 @@ def generate_monthly_report(patient_id: str) -> Dict:
             'total': len(alerts),
             'by_type': {}
         },
-        'summary': f"Patient showed {high_glucose_days} days with high glucose and {low_glucose_days} days with low glucose. Medication adherence: {round(adherence_rate, 1)}%"
+        'summary': f"Patient showed {high_glucose_days} days with high glucose and {low_glucose_days} days with low glucose. Medication adherence: {round(adherence_rate, 1)}%. Time In Range: {tir_data['tir_percentage']}%. " + (' '.join(pattern_summary) if pattern_summary else 'No significant patterns detected.')
     }
 

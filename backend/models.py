@@ -71,6 +71,13 @@ class Patient:
     doctor_id: Optional[str] = None
     care_plan: Optional[CarePlan] = None
     created_at: str = None
+    # SMS and offline preferences
+    sms_enabled: bool = True
+    sms_medication_reminders: bool = True
+    sms_glucose_reminders: bool = True
+    emergency_contact_name: Optional[str] = None
+    emergency_contact_phone: Optional[str] = None
+    doctor_reporting_enabled: bool = True  # Patient control over data sharing
     
     def __post_init__(self):
         if self.created_at is None:
@@ -199,6 +206,47 @@ class Reminder:
     scheduled_time: str  # ISO format
     frequency: str  # "daily", "weekly", "one_time"
     active: bool = True
+    
+    def to_dict(self):
+        return asdict(self)
+
+
+@dataclass
+class CommunityPost:
+    """Community post."""
+    post_id: str
+    patient_id: str
+    content: str
+    created_at: str
+    likes: int = 0
+    
+    def to_dict(self):
+        return asdict(self)
+
+
+@dataclass
+class Comment:
+    """Comment on a community post."""
+    comment_id: str
+    post_id: str
+    patient_id: str
+    content: str
+    created_at: str
+    
+    def to_dict(self):
+        return asdict(self)
+
+
+@dataclass
+class DoctorMessage:
+    """Message between patient and doctor."""
+    message_id: str
+    patient_id: str
+    doctor_id: Optional[str]
+    message: str
+    from_patient: bool  # True if from patient, False if from doctor
+    timestamp: str
+    read: bool = False
     
     def to_dict(self):
         return asdict(self)

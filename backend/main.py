@@ -8,12 +8,19 @@ from agents.orchestrator import conversation_graph, diabuddies_graph
 from storage import storage
 from models import (
     Patient, Doctor, CarePlan, Medication, GlucoseTarget, HealthGoals,
-    GlucoseLog, MedicationLog, MealLog, ActivityLog, Alert, Reminder
+    GlucoseLog, MedicationLog, MealLog, ActivityLog, Alert, Reminder,
+    CommunityPost, Comment, DoctorMessage
 )
 from services import (
     check_missed_doses, check_glucose_alerts, generate_reminders,
-    generate_weekly_report, generate_monthly_report
+    generate_weekly_report, generate_monthly_report, calculate_time_in_range
 )
+try:
+    from sms_service import sms_service
+    SMS_AVAILABLE = True
+except ImportError:
+    SMS_AVAILABLE = False
+    sms_service = None
 try:
     from voice_handler import voice_handler
     VOICE_AVAILABLE = True
@@ -54,6 +61,7 @@ def diabuddies_endpoint():
         data = request.json
         session_id = data.get('sessionId')
         message = data.get('message')
+        specialist_type = data.get('specialist', 'general')  # general, nutrition, fitness, therapist, nurse
         
         if not session_id or not message:
             return jsonify({'error': 'Missing sessionId or message'}), 400
@@ -62,10 +70,14 @@ def diabuddies_endpoint():
         if session_id not in sessions:
             sessions[session_id] = {
                 'conversation_history': [],
-                'patient_id': data.get('patient_id')  # Optional: link session to patient
+                'patient_id': data.get('patient_id'),  # Optional: link session to patient
+                'specialist': specialist_type
             }
         
         session = sessions[session_id]
+        # Update specialist if changed
+        if specialist_type != session.get('specialist'):
+            session['specialist'] = specialist_type
         
         # Check if we should generate insights (only for emergencies during conversation)
         generate_insights = data.get('generateInsights', False)
@@ -111,7 +123,8 @@ HEALTH GOALS:
             'summary': '',
             'is_emergency': False,
             'patient_id': patient_id,
-            'care_plan_context': care_plan_context
+            'care_plan_context': care_plan_context,
+            'specialist': session.get('specialist', 'general')
         }
         
         # Use fast conversation graph for normal messages, full graph for insights/emergencies
@@ -169,6 +182,12 @@ HEALTH GOALS:
 def index():
     """Serve the frontend."""
     return app.send_static_file('index.html')
+
+
+@app.route('/provider')
+def provider_portal():
+    """Serve the provider portal."""
+    return app.send_static_file('provider.html')
 
 
 @app.route('/api/insights', methods=['POST'])
@@ -239,6 +258,18 @@ def create_doctor():
         )
         storage.create_doctor(doctor)
         return jsonify(doctor.to_dict()), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/doctors/<doctor_id>', methods=['GET'])
+def get_doctor(doctor_id):
+    """Get doctor information."""
+    try:
+        doctor = storage.get_doctor(doctor_id)
+        if not doctor:
+            return jsonify({'error': 'Doctor not found'}), 404
+        return jsonify(doctor.to_dict())
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -471,6 +502,63 @@ def get_patient_logs(patient_id):
         return jsonify({'error': str(e)}), 500
 
 
+@app.route('/api/patients/<patient_id>/summary', methods=['GET'])
+def get_patient_summary(patient_id):
+    """Get aggregated summary for patient (for intelligent sync)."""
+    try:
+        days = int(request.args.get('days', 7))
+        
+        # Check if patient has doctor reporting enabled
+        patient = storage.get_patient(patient_id)
+        if not patient:
+            return jsonify({'error': 'Patient not found'}), 404
+        
+        if hasattr(patient, 'doctor_reporting_enabled') and not patient.doctor_reporting_enabled:
+            return jsonify({'error': 'Doctor reporting disabled by patient'}), 403
+        
+        # Get aggregated data
+        tir_data = calculate_time_in_range(patient_id, days=days)
+        glucose_logs = storage.get_glucose_logs(patient_id, days=days)
+        medication_logs = storage.get_medication_logs(patient_id, days=days)
+        activity_logs = storage.get_activity_logs(patient_id, days=days)
+        meal_logs = storage.get_meal_logs(patient_id, days=days)
+        
+        # Calculate averages and extremes
+        glucose_readings = [log.reading for log in glucose_logs]
+        avg_glucose = sum(glucose_readings) / len(glucose_readings) if glucose_readings else None
+        min_glucose = min(glucose_readings) if glucose_readings else None
+        max_glucose = max(glucose_readings) if glucose_readings else None
+        
+        # Medication adherence
+        care_plan = storage.get_care_plan(patient_id)
+        adherence = None
+        if care_plan and care_plan.medications:
+            total_doses = len([m for m in care_plan.medications for _ in m.times]) * days
+            taken_doses = len([log for log in medication_logs if log.taken])
+            adherence = (taken_doses / total_doses * 100) if total_doses > 0 else 0
+        
+        # Activity summary
+        total_activity = sum(log.duration_minutes for log in activity_logs)
+        
+        return jsonify({
+            'patient_id': patient_id,
+            'period_days': days,
+            'time_in_range': tir_data,
+            'glucose': {
+                'average': round(avg_glucose, 1) if avg_glucose else None,
+                'min': min_glucose,
+                'max': max_glucose,
+                'readings_count': len(glucose_readings)
+            },
+            'medication_adherence': round(adherence, 1) if adherence is not None else None,
+            'activity_minutes': total_activity,
+            'meals_logged': len(meal_logs),
+            'timestamp': datetime.now().isoformat()
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 # ==================== ALERT ENDPOINTS ====================
 
 @app.route('/api/patients/<patient_id>/alerts', methods=['GET'])
@@ -531,6 +619,37 @@ def generate_patient_reminders(patient_id):
             'reminders_generated': len(reminders),
             'reminders': [r.to_dict() for r in reminders]
         })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/patients/<patient_id>/sms/reminder', methods=['POST'])
+def send_sms_reminder(patient_id):
+    """Send SMS reminder manually."""
+    try:
+        if not SMS_AVAILABLE or not sms_service or not sms_service.available:
+            return jsonify({'error': 'SMS service not available'}), 503
+        
+        data = request.json
+        reminder_type = data.get('type', 'medication')  # medication, glucose_check, meal
+        
+        patient = storage.get_patient(patient_id)
+        if not patient or not patient.phone:
+            return jsonify({'error': 'Patient not found or no phone number'}), 404
+        
+        result = {}
+        if reminder_type == 'medication':
+            medication_name = data.get('medication_name', 'your medication')
+            dosage = data.get('dosage', '')
+            time = data.get('time', 'now')
+            result = sms_service.send_medication_reminder(patient.phone, medication_name, dosage, time)
+        elif reminder_type == 'glucose_check':
+            check_type = data.get('check_type', 'routine')
+            result = sms_service.send_glucose_check_reminder(patient.phone, check_type)
+        else:
+            return jsonify({'error': 'Invalid reminder type'}), 400
+        
+        return jsonify(result)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -778,6 +897,186 @@ def handle_call_status():
     except Exception as e:
         print(f"Error handling call status: {e}")
         return Response('', mimetype='text/xml')
+
+
+# ==================== COMMUNITY ENDPOINTS ====================
+
+@app.route('/api/community/posts', methods=['GET'])
+def get_community_posts():
+    """Get all community posts."""
+    try:
+        posts = storage.get_posts()
+        # Add author names and comment counts
+        result = []
+        for post in posts:
+            patient = storage.get_patient(post.patient_id)
+            comments = storage.get_comments(post.post_id)
+            result.append({
+                **post.to_dict(),
+                'author_name': patient.name if patient else 'Anonymous',
+                'comment_count': len(comments)
+            })
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/community/posts', methods=['POST'])
+def create_community_post():
+    """Create a new community post."""
+    try:
+        data = request.json
+        patient_id = data.get('patient_id')
+        content = data.get('content')
+        
+        if not patient_id or not content:
+            return jsonify({'error': 'patient_id and content are required'}), 400
+        
+        post = CommunityPost(
+            post_id=str(uuid.uuid4()),
+            patient_id=patient_id,
+            content=content,
+            created_at=datetime.now().isoformat(),
+            likes=0
+        )
+        storage.create_post(post)
+        return jsonify(post.to_dict()), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/community/posts/<post_id>/like', methods=['POST'])
+def like_post(post_id):
+    """Like a community post."""
+    try:
+        success = storage.like_post(post_id)
+        if success:
+            return jsonify({'status': 'liked'})
+        return jsonify({'error': 'Post not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/community/posts/<post_id>/comments', methods=['GET'])
+def get_post_comments(post_id):
+    """Get comments for a post."""
+    try:
+        comments = storage.get_comments(post_id)
+        # Add author names
+        result = []
+        for comment in comments:
+            patient = storage.get_patient(comment.patient_id)
+            result.append({
+                **comment.to_dict(),
+                'author_name': patient.name if patient else 'Anonymous'
+            })
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/community/posts/<post_id>/comments', methods=['POST'])
+def add_comment(post_id):
+    """Add a comment to a post."""
+    try:
+        data = request.json
+        patient_id = data.get('patient_id')
+        content = data.get('content')
+        
+        if not patient_id or not content:
+            return jsonify({'error': 'patient_id and content are required'}), 400
+        
+        comment = Comment(
+            comment_id=str(uuid.uuid4()),
+            post_id=post_id,
+            patient_id=patient_id,
+            content=content,
+            created_at=datetime.now().isoformat()
+        )
+        storage.add_comment(comment)
+        return jsonify(comment.to_dict()), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# ==================== DOCTOR MESSAGING ENDPOINTS ====================
+
+@app.route('/api/patients/<patient_id>/messages', methods=['GET'])
+def get_doctor_messages(patient_id):
+    """Get all messages between patient and doctor."""
+    try:
+        messages = storage.get_doctor_messages(patient_id)
+        # Add doctor names
+        result = []
+        for msg in messages:
+            msg_dict = msg.to_dict()
+            if msg.doctor_id:
+                doctor = storage.get_doctor(msg.doctor_id)
+                if doctor:
+                    msg_dict['doctor_name'] = doctor.name
+            result.append(msg_dict)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/patients/<patient_id>/messages', methods=['POST'])
+def send_doctor_message(patient_id):
+    """Send a message from patient to doctor or vice versa."""
+    try:
+        data = request.json
+        message_text = data.get('message')
+        from_patient = data.get('from_patient', True)
+        doctor_id = data.get('doctor_id')
+        
+        if not message_text:
+            return jsonify({'error': 'message is required'}), 400
+        
+        # If from patient, get their doctor_id
+        if from_patient:
+            patient = storage.get_patient(patient_id)
+            if not patient:
+                return jsonify({'error': 'Patient not found'}), 404
+            doctor_id = patient.doctor_id
+        
+        message = DoctorMessage(
+            message_id=str(uuid.uuid4()),
+            patient_id=patient_id,
+            doctor_id=doctor_id,
+            message=message_text,
+            from_patient=from_patient,
+            timestamp=datetime.now().isoformat(),
+            read=False
+        )
+        storage.add_doctor_message(message)
+        return jsonify(message.to_dict()), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/doctors/<doctor_id>/patients/<patient_id>/messages', methods=['POST'])
+def send_doctor_to_patient_message(doctor_id, patient_id):
+    """Doctor sends a message to patient."""
+    try:
+        data = request.json
+        message_text = data.get('message')
+        
+        if not message_text:
+            return jsonify({'error': 'message is required'}), 400
+        
+        message = DoctorMessage(
+            message_id=str(uuid.uuid4()),
+            patient_id=patient_id,
+            doctor_id=doctor_id,
+            message=message_text,
+            from_patient=False,
+            timestamp=datetime.now().isoformat(),
+            read=False
+        )
+        storage.add_doctor_message(message)
+        return jsonify(message.to_dict()), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/health', methods=['GET'])

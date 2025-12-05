@@ -1,0 +1,2050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diabuddies - Provider Portal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --pastel-blue: #B8E6FF;
+      --pastel-purple: #D4C5F9;
+      --pastel-green: #C8F5C8;
+      --pastel-pink: #FFD6E8;
+      --pastel-orange: #FFE5B4;
+      --soft-blue: #E3F2FD;
+      --soft-purple: #F3E5F5;
+      --soft-green: #E8F5E9;
+      --text-primary: #2C3E50;
+      --text-secondary: #7F8C8D;
+      --text-light: #BDC3C7;
+      --white: #FFFFFF;
+      --bg-light: #F8F9FA;
+      --shadow-soft: 0 2px 12px rgba(0,0,0,0.04);
+      --shadow-gentle: 0 4px 20px rgba(0,0,0,0.06);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+    }
+    
+    body {
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #E3F2FD 0%, #F3E5F5 50%, #E8F5E9 100%);
+      background-attachment: fixed;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    .provider-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    
+    .header {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 24px 32px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .header-left h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    
+    .header-left p {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+    
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .doctor-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--pastel-blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+      background: var(--white);
+      padding: 8px;
+      border-radius: 12px;
+      box-shadow: var(--shadow-soft);
+      margin-bottom: 24px;
+      overflow-x: auto;
+    }
+    
+    .nav-tab {
+      padding: 12px 24px;
+      border: none;
+      background: transparent;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    
+    .nav-tab.active {
+      background: var(--pastel-blue);
+      color: var(--text-primary);
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+    
+    .stat-card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: var(--shadow-soft);
+      transition: all 0.2s ease;
+    }
+    
+    .stat-card:hover {
+      box-shadow: var(--shadow-gentle);
+      transform: translateY(-2px);
+    }
+    
+    .stat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+    
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    
+    .stat-label {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    
+    .card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: var(--shadow-soft);
+      margin-bottom: 24px;
+    }
+    
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .card-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    
+    .btn-primary {
+      background: var(--pastel-blue);
+      color: var(--text-primary);
+    }
+    
+    .btn-primary:hover {
+      background: var(--pastel-purple);
+      transform: translateY(-1px);
+    }
+    
+    .btn-success {
+      background: var(--pastel-green);
+      color: var(--text-primary);
+    }
+    
+    .patient-list {
+      display: grid;
+      gap: 16px;
+    }
+    
+    .patient-card {
+      background: var(--bg-light);
+      border-radius: 12px;
+      padding: 20px;
+      border-left: 4px solid var(--pastel-blue);
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    
+    .patient-card:hover {
+      box-shadow: var(--shadow-soft);
+      transform: translateX(4px);
+    }
+    
+    .patient-card.high-risk {
+      border-left-color: var(--danger);
+      background: #FEF2F2;
+    }
+    
+    .patient-card.moderate-risk {
+      border-left-color: var(--warning);
+      background: #FFFBEB;
+    }
+    
+    .patient-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 12px;
+    }
+    
+    .patient-info h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    
+    .patient-info p {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+    
+    .risk-badge {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    
+    .risk-badge.low {
+      background: var(--pastel-green);
+      color: #065f46;
+    }
+    
+    .risk-badge.moderate {
+      background: var(--pastel-orange);
+      color: #92400e;
+    }
+    
+    .risk-badge.high {
+      background: #FEE2E2;
+      color: #991b1b;
+    }
+    
+    .patient-metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+    
+    .metric-item {
+      text-align: center;
+    }
+    
+    .metric-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    
+    .metric-label {
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1.5px solid #E8ECEF;
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--pastel-blue);
+      box-shadow: 0 0 0 3px rgba(184, 230, 255, 0.3);
+    }
+    
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    
+    .insights-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+    }
+    
+    .chart-container {
+      background: var(--bg-light);
+      border-radius: 12px;
+      padding: 20px;
+      min-height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+    }
+    
+    .alert-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .alert-item {
+      background: var(--bg-light);
+      padding: 16px;
+      border-radius: 12px;
+      border-left: 4px solid var(--danger);
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+    }
+    
+    .alert-item.warning {
+      border-left-color: var(--warning);
+    }
+    
+    .alert-content h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    
+    .alert-content p {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+    
+    .alert-time {
+      font-size: 12px;
+      color: var(--text-light);
+    }
+    
+    .message-thread {
+      background: var(--bg-light);
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+    }
+    
+    .message-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    
+    .message-content {
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+    
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal.active {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 32px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-gentle);
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    
+    .modal-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--text-secondary);
+    }
+    
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .table th,
+    .table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #E8ECEF;
+    }
+    
+    .table th {
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+    
+    .table td {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    
+    .table tr:hover {
+      background: var(--bg-light);
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-secondary);
+    }
+    
+    .empty-state-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+      opacity: 0.4;
+    }
+  </style>
+</head>
+<body>
+  <div class="provider-container">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-left">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+          <img src="/logo.png" alt="Diabuddies" style="height: 40px; width: auto; object-fit: contain;" onerror="this.style.display='none';">
+          <h1 style="margin: 0; font-size: 24px;"><i class="fas fa-user-md"></i> Provider Portal</h1>
+        </div>
+        <p id="doctor-name" style="margin: 0;">Dr. Sarah Johnson</p>
+      </div>
+      <div class="header-right">
+        <div class="doctor-avatar" id="doctor-avatar">SJ</div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs">
+      <button class="nav-tab active" data-tab="dashboard">
+        <i class="fas fa-chart-line"></i> Dashboard
+      </button>
+      <button class="nav-tab" data-tab="patients">
+        <i class="fas fa-users"></i> Patients
+      </button>
+      <button class="nav-tab" data-tab="insights">
+        <i class="fas fa-chart-bar"></i> Insights
+      </button>
+      <button class="nav-tab" data-tab="messages">
+        <i class="fas fa-comments"></i> Messages
+      </button>
+      <button class="nav-tab" data-tab="care-plans">
+        <i class="fas fa-clipboard-list"></i> Care Plans
+      </button>
+    </div>
+
+    <!-- Dashboard Tab -->
+    <div id="dashboard-tab" class="tab-content active">
+      <div class="dashboard-grid">
+        <div class="stat-card">
+          <div class="stat-header">
+            <div>
+              <div class="stat-value" id="total-patients">0</div>
+              <div class="stat-label">Total Patients</div>
+            </div>
+            <div class="stat-icon" style="background: var(--pastel-blue);">
+              <i class="fas fa-users" style="color: var(--text-primary);"></i>
+            </div>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-header">
+            <div>
+              <div class="stat-value" id="active-patients">0</div>
+              <div class="stat-label">Active This Week</div>
+            </div>
+            <div class="stat-icon" style="background: var(--pastel-green);">
+              <i class="fas fa-heartbeat" style="color: var(--text-primary);"></i>
+            </div>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-header">
+            <div>
+              <div class="stat-value" id="high-risk-count">0</div>
+              <div class="stat-label">High Risk Patients</div>
+            </div>
+            <div class="stat-icon" style="background: #FEE2E2;">
+              <i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i>
+            </div>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-header">
+            <div>
+              <div class="stat-value" id="avg-adherence">0%</div>
+              <div class="stat-label">Avg Medication Adherence</div>
+            </div>
+            <div class="stat-icon" style="background: var(--pastel-purple);">
+              <i class="fas fa-pills" style="color: var(--text-primary);"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Recent Alerts</h2>
+          <button class="btn btn-primary" onclick="loadAlerts()">
+            <i class="fas fa-sync"></i> Refresh
+          </button>
+        </div>
+        <div id="alerts-container" class="alert-list">
+          <!-- Alerts will be loaded here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Patients Tab -->
+    <div id="patients-tab" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Patient Management</h2>
+          <button class="btn btn-primary" onclick="openAddPatientModal()">
+            <i class="fas fa-plus"></i> Add Patient
+          </button>
+        </div>
+        <div id="patients-list" class="patient-list">
+          <!-- Patients will be loaded here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Insights Tab -->
+    <div id="insights-tab" class="tab-content">
+      <div class="card" style="margin-bottom: 24px;">
+        <div class="card-header">
+          <h2 class="card-title">AI Patient Insights</h2>
+          <button class="btn btn-primary" onclick="loadAllPatientInsights()">
+            <i class="fas fa-sync"></i> Refresh All Insights
+          </button>
+        </div>
+        <div id="all-insights-container" style="display: grid; gap: 20px;">
+          <!-- All patient insights will be loaded here -->
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Individual Patient Report</h2>
+          <select id="insight-patient-select" style="padding: 8px 12px; border-radius: 8px; border: 1.5px solid #E8ECEF;">
+            <option value="">Select a patient...</option>
+          </select>
+        </div>
+        <div id="insights-content">
+          <div class="empty-state">
+            <div class="empty-state-icon">📊</div>
+            <p>Select a patient to view detailed insights</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Messages Tab -->
+    <div id="messages-tab" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Patient Messages</h2>
+          <select id="message-patient-select" style="padding: 8px 12px; border-radius: 8px; border: 1.5px solid #E8ECEF;">
+            <option value="">Select a patient...</option>
+          </select>
+        </div>
+        <div id="messages-container" style="margin-top: 20px;">
+          <div class="empty-state">
+            <div class="empty-state-icon">💬</div>
+            <p>Select a patient to view messages</p>
+          </div>
+        </div>
+        <div id="send-message-form" style="margin-top: 24px; display: none;">
+          <div class="form-group">
+            <label>Send Feedback to Patient</label>
+            <textarea id="feedback-message" rows="4" placeholder="Type your feedback or message to the patient..."></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="sendFeedback()">
+            <i class="fas fa-paper-plane"></i> Send Feedback
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Care Plans Tab -->
+    <div id="care-plans-tab" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Care Plans</h2>
+          <select id="careplan-patient-select" style="padding: 8px 12px; border-radius: 8px; border: 1.5px solid #E8ECEF;">
+            <option value="">Select a patient...</option>
+          </select>
+        </div>
+        <div id="careplan-content">
+          <div class="empty-state">
+            <div class="empty-state-icon">📋</div>
+            <p>Select a patient to view or create care plan</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Patient Modal -->
+  <div id="add-patient-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">Add New Patient</h2>
+        <button class="close-btn" onclick="closeModal('add-patient-modal')">&times;</button>
+      </div>
+      <form id="add-patient-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Patient Name *</label>
+            <input type="text" id="patient-name" required />
+          </div>
+          <div class="form-group">
+            <label>Date of Birth</label>
+            <input type="date" id="patient-dob" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="patient-email" />
+          </div>
+          <div class="form-group">
+            <label>Phone *</label>
+            <input type="tel" id="patient-phone" required placeholder="+1234567890" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Diabetes Type</label>
+          <select id="diabetes-type">
+            <option value="Type 1">Type 1</option>
+            <option value="Type 2">Type 2</option>
+            <option value="Gestational">Gestational</option>
+            <option value="Prediabetes">Prediabetes</option>
+          </select>
+        </div>
+        <div style="display: flex; gap: 12px; margin-top: 24px;">
+          <button type="submit" class="btn btn-primary" style="flex: 1;">
+            <i class="fas fa-user-plus"></i> Add Patient
+          </button>
+          <button type="button" class="btn" onclick="closeModal('add-patient-modal')" style="flex: 1; background: var(--bg-light);">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let currentDoctorId = localStorage.getItem('doctorId') || null;
+    let selectedPatientId = null;
+
+    // Initialize
+    async function init() {
+      await initDoctor();
+      await createSamplePatients();
+      loadDashboard();
+      loadPatients();
+      setupEventListeners();
+    }
+    
+    // Create sample patients for demo
+    async function createSamplePatients() {
+      if (!currentDoctorId) return;
+      
+      try {
+        // Check if patients already exist
+        const res = await fetch(`/api/doctors/${currentDoctorId}/patients`);
+        const existingPatients = await res.json();
+        
+        // Get existing patient names to avoid duplicates
+        const existingNames = new Set(existingPatients.map(p => p.name));
+        
+        if (existingNames.size >= 20) {
+          // Already have 20 unique patients
+          return;
+        }
+        
+        const samplePatients = [
+          { name: 'John Smith', email: 'john@example.com', phone: '+1-555-0001', dob: '1990-05-15', type: 'Type 1' },
+          { name: 'Maria Rodriguez', email: 'maria@example.com', phone: '+1-555-0002', dob: '1985-08-22', type: 'Type 2' },
+          { name: 'James Wilson', email: 'james@example.com', phone: '+1-555-0003', dob: '1978-03-10', type: 'Type 2' },
+          { name: 'Patricia Chen', email: 'patricia@example.com', phone: '+1-555-0004', dob: '1992-11-05', type: 'Gestational' },
+          { name: 'Robert Taylor', email: 'robert@example.com', phone: '+1-555-0005', dob: '1982-07-18', type: 'Type 1' },
+          { name: 'Jennifer Martinez', email: 'jennifer@example.com', phone: '+1-555-0006', dob: '1988-01-30', type: 'Type 2' },
+          { name: 'Michael Brown', email: 'michael@example.com', phone: '+1-555-0007', dob: '1975-09-12', type: 'Type 2' },
+          { name: 'Sarah Davis', email: 'sarah.d@example.com', phone: '+1-555-0008', dob: '1995-04-25', type: 'Type 1' },
+          { name: 'David Anderson', email: 'david@example.com', phone: '+1-555-0009', dob: '1980-12-08', type: 'Type 2' },
+          { name: 'Emily Johnson', email: 'emily@example.com', phone: '+1-555-0010', dob: '1987-06-14', type: 'Type 2' },
+          { name: 'Christopher Lee', email: 'chris@example.com', phone: '+1-555-0011', dob: '1991-02-28', type: 'Type 1' },
+          { name: 'Amanda White', email: 'amanda@example.com', phone: '+1-555-0012', dob: '1984-10-17', type: 'Gestational' },
+          { name: 'Daniel Garcia', email: 'daniel@example.com', phone: '+1-555-0013', dob: '1979-05-03', type: 'Type 2' },
+          { name: 'Jessica Thompson', email: 'jessica@example.com', phone: '+1-555-0014', dob: '1993-08-20', type: 'Type 1' },
+          { name: 'Matthew Harris', email: 'matthew@example.com', phone: '+1-555-0015', dob: '1986-01-11', type: 'Type 2' },
+          { name: 'Lisa Moore', email: 'lisa@example.com', phone: '+1-555-0016', dob: '1989-07-26', type: 'Type 2' },
+          { name: 'Andrew Clark', email: 'andrew@example.com', phone: '+1-555-0017', dob: '1983-03-19', type: 'Type 1' },
+          { name: 'Michelle Lewis', email: 'michelle@example.com', phone: '+1-555-0018', dob: '1994-11-02', type: 'Type 2' },
+          { name: 'Ryan Walker', email: 'ryan@example.com', phone: '+1-555-0019', dob: '1981-09-15', type: 'Type 2' },
+          { name: 'Nicole Hall', email: 'nicole@example.com', phone: '+1-555-0020', dob: '1996-04-07', type: 'Type 1' }
+        ];
+        
+        const createdPatientIds = [];
+        
+        // Create patients (skip if name already exists)
+        for (const patientData of samplePatients) {
+          // Skip if patient with this name already exists
+          if (existingNames.has(patientData.name)) {
+            console.log(`Skipping duplicate patient: ${patientData.name}`);
+            continue;
+          }
+          
+          try {
+            const res = await fetch('/api/patients', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                name: patientData.name,
+                email: patientData.email,
+                phone: patientData.phone,
+                date_of_birth: patientData.dob,
+                doctor_id: currentDoctorId
+              })
+            });
+            if (res.ok) {
+              const patient = await res.json();
+              createdPatientIds.push({ id: patient.patient_id, name: patientData.name, type: patientData.type });
+              existingNames.add(patientData.name); // Track newly created
+            }
+          } catch (err) {
+            console.log('Error creating patient:', err);
+          }
+        }
+        
+        // Create care plans and sample data for some patients
+        for (let i = 0; i < Math.min(15, createdPatientIds.length); i++) {
+          const patient = createdPatientIds[i];
+          
+          // Create care plan for 15 patients
+          try {
+            const meds = [
+              { name: 'Metformin', dosage: '500mg', frequency: 'twice daily', times: ['08:00', '20:00'] },
+              { name: 'Insulin Glargine', dosage: '20 units', frequency: 'once daily', times: ['20:00'] }
+            ];
+            
+            // Adjust medications based on diabetes type
+            if (patient.type === 'Type 1') {
+              meds[0] = { name: 'Insulin Lispro', dosage: '10 units', frequency: 'before meals', times: ['08:00', '12:00', '18:00'] };
+              meds[1] = { name: 'Insulin Glargine', dosage: '25 units', frequency: 'once daily', times: ['20:00'] };
+            } else if (patient.type === 'Gestational') {
+              meds = [{ name: 'Insulin', dosage: '15 units', frequency: 'twice daily', times: ['08:00', '20:00'] }];
+            }
+            
+            await fetch(`/api/doctors/${currentDoctorId}/patients/${patient.id}/care-plan`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                medications: meds,
+                glucose_targets: {
+                  fasting_min: 80,
+                  fasting_max: 130,
+                  post_meal_min: 80,
+                  post_meal_max: 180,
+                  hba1c_target: 7.0
+                },
+                health_goals: {
+                  activity_minutes_per_week: 150,
+                  weight_target: null,
+                  dietary_goals: 'Low carb, high protein'
+                },
+                dietary_recommendations: 'Focus on whole grains, lean proteins, and vegetables. Limit processed foods.'
+              })
+            });
+          } catch (err) {
+            console.log('Error creating care plan:', err);
+          }
+          
+          // Add sample logs for realistic data
+          await addSampleLogs(patient.id, i);
+        }
+        
+        console.log(`Created ${createdPatientIds.length} sample patients`);
+      } catch (err) {
+        console.error('Error creating sample patients:', err);
+      }
+    }
+    
+    async function addSampleLogs(patientId, index) {
+      // Create varying data patterns for different patients
+      const now = new Date();
+      const daysAgo = [0, 1, 2, 3, 4, 5, 6];
+      
+      // Some patients have good control, some have issues
+      const glucosePattern = index % 4 === 0 ? 'high' : index % 4 === 1 ? 'low' : index % 4 === 2 ? 'variable' : 'good';
+      
+      for (const dayOffset of daysAgo) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - dayOffset);
+        
+        // Glucose readings
+        let glucoseValues = [];
+        if (glucosePattern === 'high') {
+          glucoseValues = [180, 195, 220, 185, 200];
+        } else if (glucosePattern === 'low') {
+          glucoseValues = [65, 70, 75, 68, 72];
+        } else if (glucosePattern === 'variable') {
+          glucoseValues = [140, 95, 160, 110, 175];
+        } else {
+          glucoseValues = [110, 125, 115, 120, 130];
+        }
+        
+        for (let i = 0; i < 2; i++) {
+          const reading = glucoseValues[Math.floor(Math.random() * glucoseValues.length)];
+          const types = ['fasting', 'post_meal', 'random'];
+          try {
+            await fetch(`/api/patients/${patientId}/glucose`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                reading: reading,
+                reading_type: types[Math.floor(Math.random() * types.length)],
+                timestamp: new Date(date.getTime() + i * 3600000 * 4).toISOString()
+              })
+            });
+          } catch (err) {}
+        }
+        
+        // Medication logs (some missed doses for realism)
+        const missedDose = Math.random() < 0.15; // 15% chance of missed dose
+        try {
+          await fetch(`/api/patients/${patientId}/medication`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              medication_name: 'Metformin',
+              dosage: '500mg',
+              taken: !missedDose,
+              timestamp: new Date(date.setHours(8, 0, 0, 0)).toISOString()
+            })
+          });
+        } catch (err) {}
+        
+        // Activity logs (some days)
+        if (Math.random() > 0.3) {
+          const activities = ['Walking', 'Running', 'Yoga', 'Cycling', 'Swimming'];
+          try {
+            await fetch(`/api/patients/${patientId}/activity`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                activity_type: activities[Math.floor(Math.random() * activities.length)],
+                duration_minutes: Math.floor(Math.random() * 45) + 15,
+                intensity: ['light', 'moderate', 'vigorous'][Math.floor(Math.random() * 3)],
+                timestamp: new Date(date.setHours(14, 0, 0, 0)).toISOString()
+              })
+            });
+          } catch (err) {}
+        }
+        
+        // Meal logs (some days)
+        if (Math.random() > 0.2) {
+          const meals = ['breakfast', 'lunch', 'dinner'];
+          try {
+            await fetch(`/api/patients/${patientId}/meal`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                meal_type: meals[Math.floor(Math.random() * meals.length)],
+                description: 'Balanced meal with protein and vegetables',
+                carbs_estimate: Math.floor(Math.random() * 40) + 30,
+                timestamp: new Date(date.setHours(12, 0, 0, 0)).toISOString()
+              })
+            });
+          } catch (err) {}
+        }
+      }
+    }
+
+    async function initDoctor() {
+      if (!currentDoctorId) {
+        try {
+          const res = await fetch('/api/doctors', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: 'Dr. Sarah Johnson',
+              email: 'sarah.johnson@healthcare.com',
+              phone: '+1-555-0123',
+              specialty: 'Endocrinology'
+            })
+          });
+          const doctor = await res.json();
+          currentDoctorId = doctor.doctor_id;
+          localStorage.setItem('doctorId', currentDoctorId);
+          document.getElementById('doctor-name').textContent = doctor.name;
+          document.getElementById('doctor-avatar').textContent = doctor.name.split(' ').map(n => n[0]).join('');
+        } catch (err) {
+          console.error('Failed to create doctor:', err);
+        }
+      } else {
+        try {
+          const res = await fetch(`/api/doctors/${currentDoctorId}`);
+          if (res.ok) {
+            const doctor = await res.json();
+            document.getElementById('doctor-name').textContent = doctor.name;
+            document.getElementById('doctor-avatar').textContent = doctor.name.split(' ').map(n => n[0]).join('');
+          }
+        } catch (err) {
+          console.error('Failed to load doctor:', err);
+        }
+      }
+    }
+
+    function setupEventListeners() {
+      // Tab navigation
+      document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const tabName = tab.dataset.tab;
+          switchTab(tabName);
+        });
+      });
+
+      // Add patient form
+      document.getElementById('add-patient-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await addPatient();
+      });
+
+      // Patient select dropdowns
+      document.getElementById('insight-patient-select').addEventListener('change', (e) => {
+        if (e.target.value) {
+          loadPatientInsights(e.target.value);
+        }
+      });
+
+      document.getElementById('message-patient-select').addEventListener('change', (e) => {
+        if (e.target.value) {
+          selectedPatientId = e.target.value;
+          loadPatientMessages(e.target.value);
+          document.getElementById('send-message-form').style.display = 'block';
+        }
+      });
+
+      document.getElementById('careplan-patient-select').addEventListener('change', (e) => {
+        if (e.target.value) {
+          loadCarePlan(e.target.value);
+        }
+      });
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+      });
+      document.querySelectorAll('.nav-tab').forEach(tabBtn => {
+        tabBtn.classList.remove('active');
+      });
+      document.getElementById(`${tab}-tab`).classList.add('active');
+      document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+
+      // Load tab-specific data
+      if (tab === 'dashboard') {
+        loadDashboard();
+      } else if (tab === 'patients') {
+        loadPatients();
+      } else if (tab === 'insights') {
+        loadPatientsForSelect('insight-patient-select');
+        loadAllPatientInsights();
+      } else if (tab === 'messages') {
+        loadPatientsForSelect('message-patient-select');
+      } else if (tab === 'care-plans') {
+        loadPatientsForSelect('careplan-patient-select');
+      }
+    }
+
+    async function loadDashboard() {
+      if (!currentDoctorId) return;
+      
+      try {
+        const res = await fetch(`/api/doctors/${currentDoctorId}/patients`);
+        const patients = await res.json();
+        
+        // Deduplicate patients
+        const uniquePatients = [];
+        const seenIds = new Set();
+        const seenNames = new Set();
+        
+        for (const patient of patients) {
+          if (!seenIds.has(patient.patient_id) && !seenNames.has(patient.name)) {
+            uniquePatients.push(patient);
+            if (patient.patient_id) seenIds.add(patient.patient_id);
+            seenNames.add(patient.name);
+          }
+        }
+        
+        document.getElementById('total-patients').textContent = uniquePatients.length;
+        
+        // Calculate active patients (logged data in last 7 days)
+        let activeCount = 0;
+        let highRiskCount = 0;
+        let totalAdherence = 0;
+        let adherenceCount = 0;
+        
+        for (const patient of uniquePatients) {
+          try {
+            const logsRes = await fetch(`/api/patients/${patient.patient_id}/logs?days=7`);
+            const logs = await logsRes.json();
+            if (logs.glucose.length > 0 || logs.medication.length > 0) {
+              activeCount++;
+            }
+            
+            // Check for high risk (high glucose readings)
+            const highGlucose = logs.glucose.filter(g => g.reading > 250 || g.reading < 70);
+            if (highGlucose.length > 0) {
+              highRiskCount++;
+            }
+            
+            // Calculate adherence
+            if (patient.care_plan && patient.care_plan.medications) {
+              const expectedDoses = patient.care_plan.medications.length * 7;
+              const takenDoses = logs.medication.filter(m => m.taken).length;
+              if (expectedDoses > 0) {
+                totalAdherence += (takenDoses / expectedDoses) * 100;
+                adherenceCount++;
+              }
+            }
+          } catch (err) {
+            console.error('Error loading patient data:', err);
+          }
+        }
+        
+        document.getElementById('active-patients').textContent = activeCount;
+        document.getElementById('high-risk-count').textContent = highRiskCount;
+        document.getElementById('avg-adherence').textContent = adherenceCount > 0 
+          ? Math.round(totalAdherence / adherenceCount) + '%' 
+          : '0%';
+        
+        // Load alerts
+        await loadAlerts();
+      } catch (err) {
+        console.error('Error loading dashboard:', err);
+      }
+    }
+
+    async function loadAlerts() {
+      if (!currentDoctorId) return;
+      
+      try {
+        const res = await fetch(`/api/doctors/${currentDoctorId}/patients`);
+        const patients = await res.json();
+        
+        // Deduplicate patients
+        const uniquePatients = [];
+        const seenIds = new Set();
+        const seenNames = new Set();
+        
+        for (const patient of patients) {
+          if (!seenIds.has(patient.patient_id) && !seenNames.has(patient.name)) {
+            uniquePatients.push(patient);
+            if (patient.patient_id) seenIds.add(patient.patient_id);
+            seenNames.add(patient.name);
+          }
+        }
+        
+        const container = document.getElementById('alerts-container');
+        container.innerHTML = '';
+        
+        let allAlerts = [];
+        
+        for (const patient of uniquePatients) {
+          try {
+            const alertsRes = await fetch(`/api/patients/${patient.patient_id}/alerts?unacknowledged_only=true`);
+            const alerts = await alertsRes.json();
+            alerts.forEach(alert => {
+              allAlerts.push({ ...alert, patient_name: patient.name, patient_id: patient.patient_id });
+            });
+          } catch (err) {
+            console.error('Error loading alerts:', err);
+          }
+        }
+        
+        // Sort by timestamp (newest first)
+        allAlerts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        
+        if (allAlerts.length === 0) {
+          container.innerHTML = '<div class="empty-state"><p>No alerts at this time</p></div>';
+          return;
+        }
+        
+        allAlerts.slice(0, 10).forEach(alert => {
+          const div = document.createElement('div');
+          div.className = `alert-item ${alert.severity === 'critical' ? '' : 'warning'}`;
+          const date = new Date(alert.timestamp).toLocaleString();
+          div.innerHTML = `
+            <div class="alert-content">
+              <h4>${alert.patient_name}</h4>
+              <p>${alert.message}</p>
+            </div>
+            <div class="alert-time">${date}</div>
+          `;
+          div.style.cursor = 'pointer';
+          div.onclick = () => {
+            selectedPatientId = alert.patient_id;
+            switchTab('patients');
+            // Could scroll to patient or highlight
+          };
+          container.appendChild(div);
+        });
+      } catch (err) {
+        console.error('Error loading alerts:', err);
+      }
+    }
+
+    async function loadPatients() {
+      if (!currentDoctorId) return;
+      
+      try {
+        const res = await fetch(`/api/doctors/${currentDoctorId}/patients`);
+        const patients = await res.json();
+        
+        // Deduplicate patients by patient_id (most reliable) or by name+email
+        const uniquePatients = [];
+        const seenIds = new Set();
+        const seenNames = new Set();
+        
+        for (const patient of patients) {
+          const key = patient.patient_id || `${patient.name}_${patient.email || patient.phone}`;
+          if (!seenIds.has(patient.patient_id) && !seenNames.has(patient.name)) {
+            uniquePatients.push(patient);
+            if (patient.patient_id) seenIds.add(patient.patient_id);
+            seenNames.add(patient.name);
+          }
+        }
+        
+        const container = document.getElementById('patients-list');
+        container.innerHTML = '';
+        
+        if (uniquePatients.length === 0) {
+          container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👥</div><p>No patients yet. Add your first patient!</p></div>';
+          return;
+        }
+        
+        for (const patient of uniquePatients) {
+          // Get recent data for risk assessment
+          let riskLevel = 'low';
+          let avgGlucose = null;
+          let adherence = null;
+          
+          try {
+            const logsRes = await fetch(`/api/patients/${patient.patient_id}/logs?days=7`);
+            const logs = await logsRes.json();
+            
+            if (logs.glucose.length > 0) {
+              const readings = logs.glucose.map(g => g.reading);
+              avgGlucose = Math.round(readings.reduce((a, b) => a + b, 0) / readings.length);
+              
+              // Check for high/low glucose
+              const highReadings = readings.filter(r => r > 250 || r < 70);
+              if (highReadings.length > 2) {
+                riskLevel = 'high';
+              } else if (highReadings.length > 0) {
+                riskLevel = 'moderate';
+              }
+            }
+            
+            // Calculate adherence
+            if (patient.care_plan && patient.care_plan.medications) {
+              const expectedDoses = patient.care_plan.medications.length * 7;
+              const takenDoses = logs.medication.filter(m => m.taken).length;
+              if (expectedDoses > 0) {
+                adherence = Math.round((takenDoses / expectedDoses) * 100);
+              }
+            }
+          } catch (err) {
+            console.error('Error loading patient metrics:', err);
+          }
+          
+          const div = document.createElement('div');
+          div.className = `patient-card ${riskLevel === 'high' ? 'high-risk' : riskLevel === 'moderate' ? 'moderate-risk' : ''}`;
+          div.innerHTML = `
+            <div class="patient-header">
+              <div class="patient-info">
+                <h3>${patient.name}</h3>
+                <p>${patient.email || patient.phone || 'No contact info'}</p>
+              </div>
+              <div class="risk-badge ${riskLevel}">${riskLevel} Risk</div>
+            </div>
+            <div class="patient-metrics">
+              <div class="metric-item">
+                <div class="metric-value">${avgGlucose || '--'}</div>
+                <div class="metric-label">Avg Glucose</div>
+              </div>
+              <div class="metric-item">
+                <div class="metric-value">${adherence !== null ? adherence + '%' : '--'}</div>
+                <div class="metric-label">Adherence</div>
+              </div>
+              <div class="metric-item">
+                <div class="metric-value">${patient.care_plan ? 'Yes' : 'No'}</div>
+                <div class="metric-label">Care Plan</div>
+              </div>
+            </div>
+            <div style="margin-top: 16px; display: flex; gap: 8px;">
+              <button class="btn btn-primary" onclick="viewPatientDetails('${patient.patient_id}')" style="flex: 1;">
+                <i class="fas fa-eye"></i> View Details
+              </button>
+              <button class="btn btn-success" onclick="sendMessageToPatient('${patient.patient_id}')" style="flex: 1;">
+                <i class="fas fa-comment"></i> Message
+              </button>
+            </div>
+          `;
+          container.appendChild(div);
+        }
+      } catch (err) {
+        console.error('Error loading patients:', err);
+      }
+    }
+
+    async function loadPatientsForSelect(selectId) {
+      if (!currentDoctorId) return;
+      
+      try {
+        const res = await fetch(`/api/doctors/${currentDoctorId}/patients`);
+        const patients = await res.json();
+        
+        // Deduplicate patients
+        const uniquePatients = [];
+        const seenIds = new Set();
+        const seenNames = new Set();
+        
+        for (const patient of patients) {
+          if (!seenIds.has(patient.patient_id) && !seenNames.has(patient.name)) {
+            uniquePatients.push(patient);
+            if (patient.patient_id) seenIds.add(patient.patient_id);
+            seenNames.add(patient.name);
+          }
+        }
+        
+        const select = document.getElementById(selectId);
+        select.innerHTML = '<option value="">Select a patient...</option>';
+        
+        uniquePatients.forEach(patient => {
+          const option = document.createElement('option');
+          option.value = patient.patient_id;
+          option.textContent = patient.name;
+          select.appendChild(option);
+        });
+      } catch (err) {
+        console.error('Error loading patients for select:', err);
+      }
+    }
+
+    async function addPatient() {
+      if (!currentDoctorId) return;
+      
+      const name = document.getElementById('patient-name').value;
+      const email = document.getElementById('patient-email').value;
+      const phone = document.getElementById('patient-phone').value;
+      const dob = document.getElementById('patient-dob').value;
+      
+      try {
+        const res = await fetch('/api/patients', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name,
+            email,
+            phone,
+            date_of_birth: dob,
+            doctor_id: currentDoctorId
+          })
+        });
+        
+        if (res.ok) {
+          closeModal('add-patient-modal');
+          document.getElementById('add-patient-form').reset();
+          loadPatients();
+          alert('Patient added successfully!');
+        }
+      } catch (err) {
+        alert('Error adding patient');
+        console.error(err);
+      }
+    }
+
+    async function loadAllPatientInsights() {
+      if (!currentDoctorId) return;
+      
+      const container = document.getElementById('all-insights-container');
+      container.innerHTML = '<div style="text-align: center; padding: 20px;"><i class="fas fa-spinner fa-spin"></i> Generating AI insights...</div>';
+      
+      try {
+        const res = await fetch(`/api/doctors/${currentDoctorId}/patients`);
+        const patients = await res.json();
+        
+        // Deduplicate patients
+        const uniquePatients = [];
+        const seenIds = new Set();
+        const seenNames = new Set();
+        
+        for (const patient of patients) {
+          if (!seenIds.has(patient.patient_id) && !seenNames.has(patient.name)) {
+            uniquePatients.push(patient);
+            if (patient.patient_id) seenIds.add(patient.patient_id);
+            seenNames.add(patient.name);
+          }
+        }
+        
+        container.innerHTML = '';
+        
+        // Process all unique patients in parallel
+        const insightPromises = uniquePatients.map(patient => generatePatientAIInsights(patient));
+        const insights = await Promise.all(insightPromises);
+        
+        insights.forEach(insight => {
+          if (insight) {
+            const div = document.createElement('div');
+            div.className = 'card';
+            div.innerHTML = insight;
+            container.appendChild(div);
+          }
+        });
+      } catch (err) {
+        console.error('Error loading all insights:', err);
+        container.innerHTML = '<div class="empty-state"><p>Error loading insights</p></div>';
+      }
+    }
+    
+    async function generatePatientAIInsights(patient) {
+      try {
+        // Get all patient data
+        const [logsRes, weeklyRes, monthlyRes] = await Promise.all([
+          fetch(`/api/patients/${patient.patient_id}/logs?days=30`),
+          fetch(`/api/doctors/${currentDoctorId}/patients/${patient.patient_id}/report/weekly`),
+          fetch(`/api/doctors/${currentDoctorId}/patients/${patient.patient_id}/report/monthly`)
+        ]);
+        
+        const logs = await logsRes.json();
+        const weekly = await weeklyRes.json();
+        const monthly = await monthlyRes.json();
+        
+        // Analyze data
+        const glucoseReadings = logs.glucose || [];
+        const medicationLogs = logs.medication || [];
+        const activityLogs = logs.activity || [];
+        const mealLogs = logs.meals || [];
+        
+        // Calculate metrics
+        const avgGlucose = glucoseReadings.length > 0 
+          ? glucoseReadings.reduce((sum, g) => sum + g.reading, 0) / glucoseReadings.length 
+          : null;
+        
+        const highGlucoseCount = glucoseReadings.filter(g => g.reading > 180).length;
+        const lowGlucoseCount = glucoseReadings.filter(g => g.reading < 70).length;
+        
+        // Calculate Time In Range (TIR)
+        let tirPercentage = null;
+        if (patient.care_plan && patient.care_plan.glucose_targets && glucoseReadings.length > 0) {
+          const targets = patient.care_plan.glucose_targets;
+          let inRangeCount = 0;
+          glucoseReadings.forEach(g => {
+            const reading = g.reading;
+            const readingType = g.reading_type || 'random';
+            let minTarget, maxTarget;
+            if (readingType === 'fasting') {
+              minTarget = targets.fasting_min || 80;
+              maxTarget = targets.fasting_max || 130;
+            } else {
+              minTarget = targets.post_meal_min || 80;
+              maxTarget = targets.post_meal_max || 180;
+            }
+            if (reading >= minTarget && reading <= maxTarget) {
+              inRangeCount++;
+            }
+          });
+          tirPercentage = (inRangeCount / glucoseReadings.length * 100).toFixed(1);
+        }
+        
+        // Medication adherence
+        let adherence = 0;
+        if (patient.care_plan && patient.care_plan.medications) {
+          const expectedDoses = patient.care_plan.medications.length * 30;
+          const takenDoses = medicationLogs.filter(m => m.taken).length;
+          adherence = expectedDoses > 0 ? Math.round((takenDoses / expectedDoses) * 100) : 0;
+        }
+        
+        // Activity analysis
+        const totalActivity = activityLogs.reduce((sum, a) => sum + a.duration_minutes, 0);
+        const avgActivityPerDay = activityLogs.length > 0 ? totalActivity / 7 : 0;
+        const activityTypes = [...new Set(activityLogs.map(a => a.activity_type))];
+        
+        // Nutrition analysis
+        const mealCount = mealLogs.length;
+        const avgCarbs = mealLogs.filter(m => m.carbs_estimate).length > 0
+          ? mealLogs.filter(m => m.carbs_estimate).reduce((sum, m) => sum + m.carbs_estimate, 0) / mealLogs.filter(m => m.carbs_estimate).length
+          : null;
+        
+        // Generate AI insights
+        const insights = [];
+        
+        // Glucose insights with TIR
+        if (tirPercentage !== null) {
+          if (tirPercentage >= 70) {
+            insights.push(`✅ <strong>Time In Range (TIR):</strong> ${tirPercentage}% - Excellent glucose control. Patient is maintaining readings within target range.`);
+          } else if (tirPercentage >= 50) {
+            insights.push(`⚠️ <strong>Time In Range (TIR):</strong> ${tirPercentage}% - Moderate control. ${100 - tirPercentage}% of readings are outside target range. Review medication timing and dietary patterns.`);
+          } else {
+            insights.push(`🔴 <strong>Time In Range (TIR):</strong> ${tirPercentage}% - Poor control. Only ${tirPercentage}% of readings are in range. Urgent intervention needed. Consider medication adjustment.`);
+          }
+        }
+        
+        if (avgGlucose) {
+          if (avgGlucose > 180) {
+            insights.push(`⚠️ <strong>Glucose Control:</strong> Average glucose is ${avgGlucose.toFixed(0)} mg/dL, indicating hyperglycemia. ${highGlucoseCount} high readings detected. Consider medication adjustment or dietary review.`);
+          } else if (avgGlucose < 100) {
+            insights.push(`⚠️ <strong>Glucose Control:</strong> Average glucose is ${avgGlucose.toFixed(0)} mg/dL. ${lowGlucoseCount} low readings detected. Monitor for hypoglycemia symptoms.`);
+          } else {
+            insights.push(`✅ <strong>Glucose Control:</strong> Average glucose of ${avgGlucose.toFixed(0)} mg/dL is within target range. Good control maintained.`);
+          }
+        }
+        
+        // Medication insights
+        if (adherence >= 90) {
+          insights.push(`✅ <strong>Medication Adherence:</strong> Excellent at ${adherence}%. Patient is consistently taking medications as prescribed.`);
+        } else if (adherence >= 75) {
+          insights.push(`⚠️ <strong>Medication Adherence:</strong> ${adherence}% adherence. Some missed doses detected. Consider reminder strategies.`);
+        } else {
+          insights.push(`🔴 <strong>Medication Adherence:</strong> ${adherence}% adherence needs improvement. Multiple missed doses. Intervention recommended.`);
+        }
+        
+        // Activity insights
+        if (avgActivityPerDay >= 20) {
+          insights.push(`✅ <strong>Activity Level:</strong> ${Math.round(avgActivityPerDay)} minutes/day average. Good activity engagement with ${activityTypes.join(', ')}.`);
+        } else if (avgActivityPerDay >= 10) {
+          insights.push(`⚠️ <strong>Activity Level:</strong> ${Math.round(avgActivityPerDay)} minutes/day. Below recommended 30 min/day. Encourage more movement.`);
+        } else {
+          insights.push(`🔴 <strong>Activity Level:</strong> Only ${Math.round(avgActivityPerDay)} minutes/day. Significantly below recommendations. Consider activity counseling.`);
+        }
+        
+        // Nutrition insights
+        if (mealCount >= 18) {
+          insights.push(`✅ <strong>Nutrition Tracking:</strong> ${mealCount} meals logged in past week. Good meal logging consistency.`);
+        } else if (mealCount >= 10) {
+          insights.push(`⚠️ <strong>Nutrition Tracking:</strong> ${mealCount} meals logged. Inconsistent logging. Encourage regular meal tracking.`);
+        } else {
+          insights.push(`🔴 <strong>Nutrition Tracking:</strong> Only ${mealCount} meals logged. Poor tracking consistency. Meal logging support needed.`);
+        }
+        
+        if (avgCarbs) {
+          if (avgCarbs > 60) {
+            insights.push(`⚠️ <strong>Carbohydrate Intake:</strong> Average ${avgCarbs.toFixed(0)}g per meal. Consider reducing carb portions for better glucose control.`);
+          } else if (avgCarbs < 30) {
+            insights.push(`⚠️ <strong>Carbohydrate Intake:</strong> Average ${avgCarbs.toFixed(0)}g per meal. Very low carb intake - ensure adequate nutrition.`);
+          } else {
+            insights.push(`✅ <strong>Carbohydrate Intake:</strong> Average ${avgCarbs.toFixed(0)}g per meal. Balanced carbohydrate consumption.`);
+          }
+        }
+        
+        // Overall risk assessment
+        let riskLevel = 'low';
+        let riskColor = 'var(--pastel-green)';
+        if (highGlucoseCount > 5 || lowGlucoseCount > 3 || adherence < 70) {
+          riskLevel = 'high';
+          riskColor = '#FEE2E2';
+        } else if (highGlucoseCount > 2 || lowGlucoseCount > 1 || adherence < 85) {
+          riskLevel = 'moderate';
+          riskColor = 'var(--pastel-orange)';
+        }
+        
+        // Recommendations
+        const recommendations = [];
+        if (highGlucoseCount > 3) {
+          recommendations.push('Review medication dosages and timing');
+          recommendations.push('Consider dietary modifications');
+        }
+        if (adherence < 85) {
+          recommendations.push('Discuss medication adherence barriers');
+          recommendations.push('Set up medication reminders');
+        }
+        if (avgActivityPerDay < 20) {
+          recommendations.push('Encourage daily physical activity');
+          recommendations.push('Suggest activity tracking');
+        }
+        if (mealCount < 15) {
+          recommendations.push('Promote consistent meal logging');
+          recommendations.push('Review meal timing and patterns');
+        }
+        
+        return `
+          <div style="border-left: 4px solid ${riskColor}; padding-left: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 16px;">
+              <div>
+                <h3 style="font-size: 18px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">
+                  ${patient.name}
+                </h3>
+                <p style="font-size: 13px; color: var(--text-secondary);">
+                  ${patient.care_plan ? 'Has Care Plan' : 'No Care Plan'} • 
+                  ${tirPercentage !== null ? `TIR: ${tirPercentage}% • ` : ''}
+                  Avg Glucose: ${avgGlucose ? avgGlucose.toFixed(0) + ' mg/dL' : 'N/A'} • 
+                  Adherence: ${adherence}%
+                </p>
+              </div>
+              <span class="risk-badge ${riskLevel}" style="margin-left: 12px;">
+                ${riskLevel} Risk
+              </span>
+            </div>
+            
+            <div style="background: var(--bg-light); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
+              <h4 style="font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-brain" style="color: var(--pastel-purple);"></i> AI-Generated Insights
+              </h4>
+              <div style="display: grid; gap: 12px;">
+                ${insights.map(insight => `<div style="font-size: 13px; line-height: 1.6; color: var(--text-primary);">${insight}</div>`).join('')}
+              </div>
+            </div>
+            
+            ${recommendations.length > 0 ? `
+              <div style="background: var(--soft-blue); padding: 16px; border-radius: 12px; margin-bottom: 12px;">
+                <h4 style="font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px;">
+                  <i class="fas fa-lightbulb" style="color: var(--pastel-orange);"></i> Recommendations
+                </h4>
+                <ul style="margin-left: 20px; font-size: 13px; line-height: 1.8; color: var(--text-primary);">
+                  ${recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                </ul>
+              </div>
+            ` : ''}
+            
+            <div style="display: flex; gap: 8px; margin-top: 12px;">
+              <button class="btn btn-primary" onclick="viewPatientDetails('${patient.patient_id}')" style="flex: 1;">
+                <i class="fas fa-eye"></i> View Details
+              </button>
+              <button class="btn btn-success" onclick="sendMessageToPatient('${patient.patient_id}')" style="flex: 1;">
+                <i class="fas fa-comment"></i> Send Feedback
+              </button>
+            </div>
+          </div>
+        `;
+      } catch (err) {
+        console.error(`Error generating insights for ${patient.name}:`, err);
+        return null;
+      }
+    }
+    
+    async function loadPatientInsights(patientId) {
+      try {
+        const [weeklyRes, monthlyRes, logsRes] = await Promise.all([
+          fetch(`/api/doctors/${currentDoctorId}/patients/${patientId}/report/weekly`),
+          fetch(`/api/doctors/${currentDoctorId}/patients/${patientId}/report/monthly`),
+          fetch(`/api/patients/${patientId}/logs?days=30`)
+        ]);
+        
+        const weekly = await weeklyRes.json();
+        const monthly = await monthlyRes.json();
+        const logs = await logsRes.json();
+        
+        // Generate detailed AI insights
+        const glucoseReadings = logs.glucose || [];
+        const medicationLogs = logs.medication || [];
+        const activityLogs = logs.activity || [];
+        const mealLogs = logs.meals || [];
+        
+        const avgGlucose = glucoseReadings.length > 0 
+          ? glucoseReadings.reduce((sum, g) => sum + g.reading, 0) / glucoseReadings.length 
+          : null;
+        
+        const container = document.getElementById('insights-content');
+        
+        // Calculate TIR
+        const tirData = weekly.glucose?.time_in_range || monthly.glucose?.time_in_range || null;
+        const tirPercentage = tirData ? tirData.tir_percentage : null;
+        
+        let html = `
+          <div style="margin-top: 20px;">
+            ${tirPercentage !== null ? `
+              <div class="card" style="margin-bottom: 20px; background: linear-gradient(135deg, ${tirPercentage >= 70 ? 'var(--soft-green)' : tirPercentage >= 50 ? 'var(--pastel-orange)' : '#FEE2E2'} 0%, rgba(255,255,255,0.8) 100%);">
+                <h3 style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                  <i class="fas fa-chart-line" style="color: var(--text-primary);"></i> Time In Range (TIR)
+                </h3>
+                <div style="display: flex; align-items: center; gap: 24px;">
+                  <div style="font-size: 48px; font-weight: 700; color: var(--text-primary);">
+                    ${tirPercentage}%
+                  </div>
+                  <div style="flex: 1;">
+                    <div style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">
+                      ${tirData.in_range} of ${tirData.total_readings} readings in target range
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; font-size: 12px;">
+                      <div>
+                        <div style="color: var(--pastel-green); font-weight: 600;">In Range</div>
+                        <div style="color: var(--text-primary);">${tirData.in_range}</div>
+                      </div>
+                      <div>
+                        <div style="color: var(--pastel-orange); font-weight: 600;">Below</div>
+                        <div style="color: var(--text-primary);">${tirData.below_range || 0}</div>
+                      </div>
+                      <div>
+                        <div style="color: #FEE2E2; font-weight: 600;">Above</div>
+                        <div style="color: var(--text-primary);">${tirData.above_range || 0}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ` : ''}
+            
+            <div class="card" style="margin-bottom: 20px;">
+              <h3 style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-chart-area" style="color: var(--pastel-purple);"></i> Glucose Trend Chart
+              </h3>
+              <canvas id="glucose-chart" style="max-height: 300px;"></canvas>
+            </div>
+            
+            <div class="card" style="margin-bottom: 20px; background: var(--soft-blue);">
+              <h3 style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-brain" style="color: var(--pastel-purple);"></i> AI Analysis Summary
+              </h3>
+              ${await generateDetailedAIInsights(patientId, logs, weekly, monthly)}
+            </div>
+            
+            <div class="insights-grid">
+              <div class="card">
+                <h3 style="margin-bottom: 16px;">Weekly Report</h3>
+                <div style="display: grid; gap: 16px;">
+                  <div>
+                    <strong>Average Glucose:</strong> ${weekly.glucose?.average ? weekly.glucose.average.toFixed(1) + ' mg/dL' : 'N/A'}
+                  </div>
+                  ${tirData ? `<div><strong>Time In Range:</strong> ${tirData.tir_percentage}%</div>` : ''}
+                  <div>
+                    <strong>Medication Adherence:</strong> ${weekly.medication_adherence?.rate || 0}%
+                  </div>
+                  <div>
+                    <strong>Activity:</strong> ${weekly.activity?.total_minutes || 0} minutes
+                  </div>
+                  <div>
+                    <strong>Alerts:</strong> ${weekly.alerts?.total || 0} (${weekly.alerts?.critical || 0} critical)
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <h3 style="margin-bottom: 16px;">Monthly Report</h3>
+                <div style="display: grid; gap: 16px;">
+                  <div>
+                    <strong>Average Glucose:</strong> ${monthly.glucose?.average ? monthly.glucose.average.toFixed(1) + ' mg/dL' : 'N/A'}
+                  </div>
+                  ${monthly.glucose?.time_in_range ? `<div><strong>Time In Range:</strong> ${monthly.glucose.time_in_range.tir_percentage}%</div>` : ''}
+                  <div>
+                    <strong>High Glucose Days:</strong> ${monthly.glucose?.high_days || 0}
+                  </div>
+                  <div>
+                    <strong>Low Glucose Days:</strong> ${monthly.glucose?.low_days || 0}
+                  </div>
+                  <div>
+                    <strong>Adherence:</strong> ${monthly.medication_adherence?.rate || 0}%
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        container.innerHTML = html;
+        
+        // Generate glucose chart
+        if (glucoseReadings.length > 0) {
+          const ctx = document.getElementById('glucose-chart');
+          if (ctx) {
+            const sortedReadings = [...glucoseReadings].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+            new Chart(ctx, {
+              type: 'line',
+              data: {
+                labels: sortedReadings.map(r => new Date(r.timestamp).toLocaleDateString()),
+                datasets: [{
+                  label: 'Glucose (mg/dL)',
+                  data: sortedReadings.map(r => r.reading),
+                  borderColor: 'rgb(75, 192, 192)',
+                  backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                  tension: 0.1
+                }]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                  y: {
+                    beginAtZero: false,
+                    min: 50,
+                    max: 350
+                  }
+                }
+              }
+            });
+          }
+        }
+        
+        container.innerHTML = html;
+      } catch (err) {
+        console.error('Error loading insights:', err);
+        document.getElementById('insights-content').innerHTML = '<div class="empty-state"><p>Error loading insights</p></div>';
+      }
+    }
+    
+    async function generateDetailedAIInsights(patientId, logs, weekly, monthly) {
+      const glucoseReadings = logs.glucose || [];
+      const medicationLogs = logs.medication || [];
+      const activityLogs = logs.activity || [];
+      const mealLogs = logs.meals || [];
+      
+      const insights = [];
+      
+      // Glucose pattern analysis
+      if (glucoseReadings.length > 0) {
+        const morningReadings = glucoseReadings.filter(g => {
+          const hour = new Date(g.timestamp).getHours();
+          return hour >= 6 && hour < 12;
+        });
+        const eveningReadings = glucoseReadings.filter(g => {
+          const hour = new Date(g.timestamp).getHours();
+          return hour >= 17 && hour < 22;
+        });
+        
+        if (morningReadings.length > 0 && eveningReadings.length > 0) {
+          const morningAvg = morningReadings.reduce((s, g) => s + g.reading, 0) / morningReadings.length;
+          const eveningAvg = eveningReadings.reduce((s, g) => s + g.reading, 0) / eveningReadings.length;
+          
+          if (morningAvg > eveningAvg + 20) {
+            insights.push('🌅 <strong>Morning Pattern:</strong> Higher glucose in mornings suggests dawn phenomenon. Consider adjusting evening medication timing.');
+          } else if (eveningAvg > morningAvg + 20) {
+            insights.push('🌆 <strong>Evening Pattern:</strong> Higher glucose in evenings. Review dinner timing and carbohydrate intake.');
+          }
+        }
+      }
+      
+      // Medication timing analysis
+      const missedDoses = medicationLogs.filter(m => !m.taken);
+      if (missedDoses.length > 0) {
+        const missedTimes = missedDoses.map(m => new Date(m.timestamp).getHours());
+        const mostMissedHour = missedTimes.sort((a,b) => 
+          missedTimes.filter(v => v === a).length - missedTimes.filter(v => v === b).length
+        ).pop();
+        
+        insights.push(`⏰ <strong>Medication Timing:</strong> Most missed doses around ${mostMissedHour}:00. Consider setting reminders for this time.`);
+      }
+      
+      // Activity impact analysis
+      if (activityLogs.length > 0 && glucoseReadings.length > 0) {
+        const activityDays = activityLogs.map(a => new Date(a.timestamp).toDateString());
+        const glucoseByDay = {};
+        glucoseReadings.forEach(g => {
+          const day = new Date(g.timestamp).toDateString();
+          if (!glucoseByDay[day]) glucoseByDay[day] = [];
+          glucoseByDay[day].push(g.reading);
+        });
+        
+        const activityDayGlucose = activityDays.filter(day => glucoseByDay[day])
+          .map(day => glucoseByDay[day].reduce((s, r) => s + r, 0) / glucoseByDay[day].length);
+        const nonActivityDayGlucose = Object.keys(glucoseByDay)
+          .filter(day => !activityDays.includes(day))
+          .map(day => glucoseByDay[day].reduce((s, r) => s + r, 0) / glucoseByDay[day].length);
+        
+        if (activityDayGlucose.length > 0 && nonActivityDayGlucose.length > 0) {
+          const activityAvg = activityDayGlucose.reduce((s, r) => s + r, 0) / activityDayGlucose.length;
+          const nonActivityAvg = nonActivityDayGlucose.reduce((s, r) => s + r, 0) / nonActivityDayGlucose.length;
+          
+          if (activityAvg < nonActivityAvg - 10) {
+            insights.push(`🏃 <strong>Activity Impact:</strong> Glucose is ${(nonActivityAvg - activityAvg).toFixed(0)} mg/dL lower on activity days. Exercise is positively impacting glucose control.`);
+          }
+        }
+      }
+      
+      // Nutrition pattern analysis
+      if (mealLogs.length > 0) {
+        const mealTimes = mealLogs.map(m => new Date(m.timestamp).getHours());
+        const avgMealTime = mealTimes.reduce((s, t) => s + t, 0) / mealTimes.length;
+        
+        if (avgMealTime < 8) {
+          insights.push('🍽️ <strong>Meal Timing:</strong> Early meal times detected. Consider spacing meals more evenly throughout the day.');
+        } else if (avgMealTime > 14) {
+          insights.push('🍽️ <strong>Meal Timing:</strong> Late meal times may affect morning glucose. Consider earlier dinner times.');
+        }
+      }
+      
+      return insights.length > 0 
+        ? `<div style="display: grid; gap: 12px;">${insights.map(i => `<div style="font-size: 13px; line-height: 1.6;">${i}</div>`).join('')}</div>`
+        : '<p style="font-size: 13px; color: var(--text-secondary);">No specific patterns detected. Continue monitoring.</p>';
+    }
+
+    async function loadPatientMessages(patientId) {
+      try {
+        const res = await fetch(`/api/patients/${patientId}/messages`);
+        const messages = await res.json();
+        
+        const container = document.getElementById('messages-container');
+        container.innerHTML = '';
+        
+        if (messages.length === 0) {
+          container.innerHTML = '<div class="empty-state"><p>No messages yet</p></div>';
+          return;
+        }
+        
+        messages.forEach(msg => {
+          const div = document.createElement('div');
+          div.className = 'message-thread';
+          const date = new Date(msg.timestamp).toLocaleString();
+          div.innerHTML = `
+            <div class="message-header">
+              <span>${msg.from_patient ? 'Patient' : 'You'}</span>
+              <span>${date}</span>
+            </div>
+            <div class="message-content">${msg.message}</div>
+          `;
+          container.appendChild(div);
+        });
+      } catch (err) {
+        console.error('Error loading messages:', err);
+      }
+    }
+
+    async function sendFeedback() {
+      if (!selectedPatientId || !currentDoctorId) {
+        alert('Please select a patient first');
+        return;
+      }
+      
+      const message = document.getElementById('feedback-message').value.trim();
+      if (!message) {
+        alert('Please enter a message');
+        return;
+      }
+      
+      try {
+        const res = await fetch(`/api/doctors/${currentDoctorId}/patients/${selectedPatientId}/messages`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message })
+        });
+        
+        if (res.ok) {
+          document.getElementById('feedback-message').value = '';
+          loadPatientMessages(selectedPatientId);
+          alert('Feedback sent successfully!');
+        }
+      } catch (err) {
+        alert('Error sending feedback');
+        console.error(err);
+      }
+    }
+
+    async function loadCarePlan(patientId) {
+      try {
+        const res = await fetch(`/api/patients/${patientId}`);
+        const patient = await res.json();
+        
+        const container = document.getElementById('careplan-content');
+        
+        if (patient.care_plan) {
+          const cp = patient.care_plan;
+          let html = `
+            <div style="margin-top: 20px;">
+              <h3 style="margin-bottom: 16px;">Current Care Plan</h3>
+              <div class="card" style="margin-bottom: 20px;">
+                <h4 style="margin-bottom: 12px;">Medications</h4>
+                <ul style="margin-left: 20px; line-height: 1.8;">
+                  ${cp.medications.map(m => `<li>${m.name} - ${m.dosage} (${m.frequency})</li>`).join('')}
+                </ul>
+              </div>
+              <div class="card" style="margin-bottom: 20px;">
+                <h4 style="margin-bottom: 12px;">Glucose Targets</h4>
+                <p>Fasting: ${cp.glucose_targets.fasting_min}-${cp.glucose_targets.fasting_max} mg/dL</p>
+                <p>Post-meal: ${cp.glucose_targets.post_meal_min}-${cp.glucose_targets.post_meal_max} mg/dL</p>
+              </div>
+              <button class="btn btn-primary" onclick="openCreateCarePlanModal('${patientId}')">
+                <i class="fas fa-edit"></i> Update Care Plan
+              </button>
+            </div>
+          `;
+          container.innerHTML = html;
+        } else {
+          container.innerHTML = `
+            <div style="margin-top: 20px;">
+              <p style="margin-bottom: 16px;">No care plan set for this patient.</p>
+              <button class="btn btn-primary" onclick="openCreateCarePlanModal('${patientId}')">
+                <i class="fas fa-plus"></i> Create Care Plan
+              </button>
+            </div>
+          `;
+        }
+      } catch (err) {
+        console.error('Error loading care plan:', err);
+      }
+    }
+
+    function openAddPatientModal() {
+      document.getElementById('add-patient-modal').classList.add('active');
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+    }
+
+    function viewPatientDetails(patientId) {
+      selectedPatientId = patientId;
+      switchTab('insights');
+      document.getElementById('insight-patient-select').value = patientId;
+      loadPatientInsights(patientId);
+    }
+
+    function sendMessageToPatient(patientId) {
+      selectedPatientId = patientId;
+      switchTab('messages');
+      document.getElementById('message-patient-select').value = patientId;
+      loadPatientMessages(patientId);
+      document.getElementById('send-message-form').style.display = 'block';
+    }
+
+    function openCreateCarePlanModal(patientId) {
+      // For now, show a simple form
+      const medications = prompt('Enter medications (format: Name, Dosage, Frequency, Times - one per line):\nExample:\nMetformin, 500mg, twice daily, 08:00,20:00');
+      if (medications) {
+        // Parse and create care plan (simplified for demo)
+        alert('Care plan creation feature - would integrate with backend API');
+      }
+    }
+
+    // Close modal on outside click
+    document.getElementById('add-patient-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'add-patient-modal') {
+        closeModal('add-patient-modal');
+      }
+    });
+
+    // Initialize on load
+    init();
+  </script>
+</body>
+</html>
+

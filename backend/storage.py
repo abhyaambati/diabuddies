@@ -6,7 +6,8 @@ from datetime import datetime
 import uuid
 from models import (
     Patient, Doctor, CarePlan, Medication, GlucoseTarget, HealthGoals,
-    GlucoseLog, MedicationLog, MealLog, ActivityLog, Alert, Reminder
+    GlucoseLog, MedicationLog, MealLog, ActivityLog, Alert, Reminder,
+    CommunityPost, Comment, DoctorMessage
 )
 
 
@@ -28,6 +29,9 @@ class Storage:
         self.activity_logs: Dict[str, List[ActivityLog]] = {}
         self.alerts: Dict[str, List[Alert]] = {}
         self.reminders: Dict[str, List[Reminder]] = {}
+        self.community_posts: List[CommunityPost] = []
+        self.comments: Dict[str, List[Comment]] = {}  # post_id -> comments
+        self.doctor_messages: Dict[str, List[DoctorMessage]] = {}  # patient_id -> messages
         
         # Load from files if they exist
         self._load_file('patients.json', self.patients, Patient)
@@ -38,6 +42,19 @@ class Storage:
         self._load_file('activity_logs.json', self.activity_logs, ActivityLog, is_list=True)
         self._load_file('alerts.json', self.alerts, Alert, is_list=True)
         self._load_file('reminders.json', self.reminders, Reminder, is_list=True)
+        # Load community posts (special handling for global list)
+        filepath = os.path.join(self.data_dir, 'community_posts.json')
+        if os.path.exists(filepath):
+            try:
+                with open(filepath, 'r') as f:
+                    data = json.load(f)
+                    if 'posts' in data:
+                        self.community_posts = [self._dict_to_model(item, CommunityPost) for item in data['posts']]
+            except Exception as e:
+                print(f"Error loading community_posts.json: {e}")
+        
+        self._load_file('comments.json', self.comments, Comment, is_list=True)
+        self._load_file('doctor_messages.json', self.doctor_messages, DoctorMessage, is_list=True)
     
     def _load_file(self, filename: str, storage: Dict, model_class, is_list: bool = False):
         """Load data from JSON file."""
@@ -77,6 +94,12 @@ class Storage:
             return Alert(**data)
         elif model_class == Reminder:
             return Reminder(**data)
+        elif model_class == CommunityPost:
+            return CommunityPost(**data)
+        elif model_class == Comment:
+            return Comment(**data)
+        elif model_class == DoctorMessage:
+            return DoctorMessage(**data)
         return model_class(**data)
     
     def _dict_to_care_plan(self, data: Dict) -> CarePlan:
@@ -119,6 +142,12 @@ class Storage:
         self._save_file('activity_logs.json', self.activity_logs)
         self._save_file('alerts.json', self.alerts)
         self._save_file('reminders.json', self.reminders)
+        # Save community posts (special handling for global list)
+        filepath = os.path.join(self.data_dir, 'community_posts.json')
+        with open(filepath, 'w') as f:
+            json.dump({'posts': [p.to_dict() for p in self.community_posts]}, f, indent=2, default=str)
+        self._save_file('comments.json', self.comments)
+        self._save_file('doctor_messages.json', self.doctor_messages)
     
     # Patient methods
     def create_patient(self, patient: Patient) -> Patient:
@@ -261,6 +290,49 @@ class Storage:
         if active_only:
             reminders = [r for r in reminders if r.active]
         return reminders
+    
+    # Community methods
+    def create_post(self, post: CommunityPost):
+        """Create a community post."""
+        self.community_posts.append(post)
+        self.save()
+    
+    def get_posts(self, limit: int = 50) -> List[CommunityPost]:
+        """Get all community posts, sorted by newest first."""
+        posts = sorted(self.community_posts, key=lambda x: x.created_at, reverse=True)
+        return posts[:limit]
+    
+    def like_post(self, post_id: str):
+        """Like a post."""
+        for post in self.community_posts:
+            if post.post_id == post_id:
+                post.likes += 1
+                self.save()
+                return True
+        return False
+    
+    def add_comment(self, comment: Comment):
+        """Add a comment to a post."""
+        if comment.post_id not in self.comments:
+            self.comments[comment.post_id] = []
+        self.comments[comment.post_id].append(comment)
+        self.save()
+    
+    def get_comments(self, post_id: str) -> List[Comment]:
+        """Get comments for a post."""
+        return sorted(self.comments.get(post_id, []), key=lambda x: x.created_at)
+    
+    # Doctor messaging methods
+    def add_doctor_message(self, message: DoctorMessage):
+        """Add a message between patient and doctor."""
+        if message.patient_id not in self.doctor_messages:
+            self.doctor_messages[message.patient_id] = []
+        self.doctor_messages[message.patient_id].append(message)
+        self.save()
+    
+    def get_doctor_messages(self, patient_id: str) -> List[DoctorMessage]:
+        """Get all messages for a patient."""
+        return sorted(self.doctor_messages.get(patient_id, []), key=lambda x: x.timestamp)
 
 
 # Global storage instance

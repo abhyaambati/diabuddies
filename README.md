@@ -100,8 +100,10 @@ diabuddies-2/
 
 ## 📚 Documentation
 
+- **[Product Description](docs/PRODUCT_DESCRIPTION.md)** - Comprehensive product vision and user experience
 - **[API Documentation](docs/API_DOCUMENTATION.md)** - Complete API reference
 - **[Features List](docs/FEATURES.md)** - Detailed feature documentation
+- **[Implementation Gaps](docs/IMPLEMENTATION_GAPS.md)** - Features to be implemented
 - **[Backend README](backend/README.md)** - Backend setup and architecture
 
 ## 🔧 API Endpoints
